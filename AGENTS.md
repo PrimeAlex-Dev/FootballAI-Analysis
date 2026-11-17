@@ -32,6 +32,6 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 
 ## Git và thông tin bí mật
 
-- GitHub Flow: branch theo mục tiêu → PR vào `main` → review → Squash Merge. Không push trực tiếp vào `main` hoặc bỏ qua bảo vệ nhánh.
+- GitHub Flow: branch theo mục tiêu → PR vào `main` → review → Merge Commit. Không push trực tiếp vào `main` hoặc bỏ qua bảo vệ nhánh.
 - Không tự commit, push hoặc merge nếu yêu cầu chưa bao gồm các thao tác đó.
 - Không commit `.env`, credential, API key hoặc payload nhạy cảm. `.env.example` chỉ chứa giá trị mẫu an toàn.
