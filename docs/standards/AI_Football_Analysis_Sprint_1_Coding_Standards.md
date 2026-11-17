@@ -7,6 +7,10 @@
 
 ---
 
+Tài liệu liên quan: [Ý tưởng Sprint 1](../requirements/ai_football_analysis_project_overview_sprint_1.md), [Tech Stack](../architecture/AI_Football_Analysis_Sprint_1_Tech_Stack.md), [AGENTS.md](../../AGENTS.md).
+
+**Trạng thái repository:** Monorepo; frontend dùng Vite + React + TypeScript với npm và Oxlint từ template; backend dùng Java 21, Spring Boot 4.1.2, Maven Wrapper 3.9.13. Chưa có Reference Module được duyệt. Định dạng cơ bản theo .editorconfig root; formatter đầy đủ chưa chốt.
+
 ## 1. Triết lý viết code
 
 1. **Rõ ràng hơn ngắn gọn.** Viết code sạch, vừa đủ ngắn nhưng **tường minh**. Không rút ngắn chỉ để giảm số dòng.
@@ -378,7 +382,7 @@ Một JSON import thử nghiệm phải có test cho: dữ liệu hợp lệ, th
 
 **Mẫu chỉ dẫn ngắn cho AI (copy vào yêu cầu code):**
 
-> Hãy tuân thủ `AI_Football_Analysis_Sprint_1_Coding_Standards.md` và module tham chiếu đã được duyệt. Viết code gọn, rõ nghĩa, dùng cú pháp phổ biến dễ bảo trì. Giữ đúng kiến trúc Modular Monolith và style của các module trước. Không tự thêm thư viện/tầng abstraction/kiến trúc mới. Nếu nghiệp vụ hoặc pattern chưa rõ, nêu giả định và điểm cần quyết định. Kiểm tra tính nhất quán của DTO, validation, error handling, transaction, migration và tests trước khi hoàn thành.
+> Hãy tuân thủ `docs/standards/AI_Football_Analysis_Sprint_1_Coding_Standards.md` và module tham chiếu đã được duyệt. Viết code gọn, rõ nghĩa, dùng cú pháp phổ biến dễ bảo trì. Giữ đúng kiến trúc Modular Monolith và style của các module trước. Không tự thêm thư viện/tầng abstraction/kiến trúc mới. Nếu nghiệp vụ hoặc pattern chưa rõ, nêu giả định và điểm cần quyết định. Kiểm tra tính nhất quán của DTO, validation, error handling, transaction, migration và tests trước khi hoàn thành.
 
 ---
 
@@ -386,9 +390,9 @@ Một JSON import thử nghiệm phải có test cho: dữ liệu hợp lệ, th
 
 Các phần sau phải thống nhất khi bắt đầu tạo project/reference module:
 
-- Java / Spring Boot / React / TypeScript version cụ thể.
-- Build tool (Maven hay Gradle).
-- Formatters/linters cụ thể và quy tắc format.
+- Chính sách phiên bản React / TypeScript cho nhóm; backend đã chọn Java 21 và Spring Boot 4.1.2.
+- Backend đã chọn Maven Wrapper 3.9.13; frontend dùng Vite và npm. Toolchain Node.js chung cho nhóm chưa chốt.
+- Formatter đầy đủ và linter backend; frontend hiện dùng Oxlint từ template. Định dạng cơ bản theo .editorconfig root.
 - API response/error schema và pagination contract.
 - Cách mapping DTO (manual hoặc thư viện).
 - Thư viện UI, form, gọi API và quản lý state ở frontend.
