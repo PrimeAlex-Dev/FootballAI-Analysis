@@ -42,4 +42,4 @@ Các công nghệ dưới đây thuộc kế hoạch thiết lập, chưa tích 
 ## Quản lý mã nguồn
 
 - **Git + GitHub:** quản lý phiên bản, Pull Request và review.
-- **GitHub Flow + Squash Merge:** quy trình tích hợp thay đổi vào main.
+- **GitHub Flow + Merge Commit:** quy trình tích hợp thay đổi vào main.
