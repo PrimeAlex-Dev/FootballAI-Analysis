@@ -4,7 +4,7 @@ Nền tảng dữ liệu bóng đá phục vụ quản trị, truy vấn lịch 
 
 ## Trạng thái
 
-Chỉ khởi tạo cấu trúc repository. Chưa có code ứng dụng, module nghiệp vụ, API, database schema hoặc CI/CD workflow. Chưa có Reference Module được duyệt.
+Đã khởi tạo cấu trúc repository và frontend theo template Vite React + TypeScript mặc định. Chưa có module nghiệp vụ, API, database schema hoặc CI/CD workflow. Chưa có Reference Module được duyệt.
 
 ## Cấu trúc
 
@@ -43,6 +43,17 @@ Modular Monolith; Java + Spring Boot; Spring Data JPA/Hibernate; PostgreSQL; Fly
 
 `backend/pom.xml` được giữ từ skeleton có sẵn, sử dụng Maven và khai báo Java 21. Chưa thêm Spring Boot hoặc dependency. Cấu hình hiện có cần được xác nhận khi thiết lập toolchain.
 
-`frontend/package.json` chỉ chứa metadata. Hai Dockerfile là placeholder; Compose chưa có service; thư mục workflows chưa có pipeline. Chưa có lệnh chạy ứng dụng hoặc triển khai ở giai đoạn này.
+Frontend sử dụng template `react-ts` từ create-vite, giữ nguyên màn hình demo mặc định. Phiên bản dependency được lưu trong `frontend/package.json` và `frontend/package-lock.json`.
+
+Chạy frontend từ thư mục `frontend`:
+
+```sh
+npm ci
+npm run dev
+```
+
+Kiểm tra bằng `npm run lint` và `npm run build`. Xem bản build bằng `npm run preview`.
+
+Hai Dockerfile là placeholder; Compose chưa có service; thư mục workflows chưa có pipeline.
 
 Các thư mục source rỗng được giữ bằng `.gitkeep`. Không commit `.env` hoặc thông tin bí mật.
