@@ -35,6 +35,21 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Initialize Maven Wrapper
+        env:
+          MVNW_VERBOSE: 'true'
+        run: |
+          for attempt in 1 2 3; do
+            if sh ./mvnw --version; then
+              exit 0
+            fi
+            echo "Maven Wrapper initialization failed (attempt ${attempt}/3)."
+            if [ "$attempt" -lt 3 ]; then
+              sleep 5
+            fi
+          done
+          exit 1
+
       - name: Build and test
         run: sh ./mvnw --batch-mode --no-transfer-progress clean verify
 
