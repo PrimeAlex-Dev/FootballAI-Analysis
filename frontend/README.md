@@ -1,32 +1,34 @@
-# React + TypeScript + Vite
+# AI Football Analysis — Admin Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Vite + React + TypeScript từ template react-ts; hiện giữ demo mặc định, chưa có giao diện nghiệp vụ.
 
-Currently, two official plugins are available:
+## Chạy local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Cần Node.js/npm tương thích với lockfile. Môi trường khởi tạo: Node.js 24.15.0, npm 11.12.1; chưa chốt toolchain chung cho nhóm.
 
-## React Compiler
+Chạy trong thư mục frontend:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Mở URL Vite in trong terminal. Các lệnh kiểm tra:
+
+```sh
+npm run lint
+npm run build
+npm run preview
+```
+
+Build kiểm tra TypeScript và tạo dist/. Preview chỉ phục vụ bản build local. Lint dùng Oxlint từ template; chưa có lệnh test hoặc formatter riêng.
+
+Lần kiểm tra khởi tạo: build thành công; Windows Application Control chặn native binding của Oxlint nên lint chưa chạy được. Cần xác minh trên môi trường được phép chạy công cụ, không tắt chính sách bảo vệ để bỏ qua lỗi.
+
+## Quy ước
+
+- Dùng npm và commit package-lock.json khi dependency thay đổi.
+- Theo [AGENTS.md](../AGENTS.md) và [Coding Standards](../docs/standards/AI_Football_Analysis_Sprint_1_Coding_Standards.md).
+- Chưa có Reference Module được duyệt.
+- Không đưa credential hoặc secret vào frontend, kể cả biến môi trường đóng gói cho trình duyệt.
+- Dockerfile hiện là placeholder.

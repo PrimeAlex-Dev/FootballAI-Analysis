@@ -1,5 +1,7 @@
-# AI Football Analysis — Tổng quan dự án & Đặc tả nghiệp vụ Sprint 1
-**Project Overview & Sprint 1 Business Requirements — Version 1.0**
+# AI Football Analysis — Tổng quan ý tưởng & Định hướng Sprint 1
+**Project Overview & Sprint 1 Direction — Version 1.0**
+
+> **Trạng thái:** Bản mô tả ý tưởng ban đầu, chưa phải đặc tả nghiệp vụ được duyệt. Entity, sơ đồ, JSON, API và tiêu chí hoàn thành thể hiện định hướng; cần làm rõ trước khi triển khai phần liên quan.
 
 ---
 

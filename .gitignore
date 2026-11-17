@@ -9,6 +9,18 @@
 *.iml
 *.iws
 *.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.springBeans
+.sts4-cache/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Backend build output
 target/
@@ -16,11 +28,14 @@ target/
 # Frontend dependencies and build output
 node_modules/
 dist/
+dist-ssr/
 build/
 coverage/
 *.tsbuildinfo
+*.local
 
 # Logs and operating system files
 *.log
+logs/
 .DS_Store
 Thumbs.db

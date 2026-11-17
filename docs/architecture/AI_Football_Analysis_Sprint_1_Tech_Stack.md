@@ -29,6 +29,8 @@ Hệ thống phải quản lý và liên kết các đối tượng nghiệp v�
 
 ## 2. Tech stack đã chốt
 
+**Cập nhật Repository Standards:** Đã chọn monorepo, frontend Vite + React + TypeScript, npm và package-lock.json. Oxlint đi kèm template. Backend Foundation dùng Java 21, Spring Boot 4.1.2 và Maven Wrapper 3.9.13 (wrapper plugin 3.3.4). Dependency hiện chỉ gồm Spring MVC, Actuator và Spring Boot Starter Test; chưa có persistence hoặc module nghiệp vụ. Phiên bản dependency frontend nằm trong package.json và lockfile. Các lựa chọn này cập nhật trạng thái tương ứng trong bản mô tả ban đầu bên dưới.
+
 | Lớp | Công nghệ | Trạng thái | Vai trò |
 |---|---|---|---|
 | Architecture | **Modular Monolith** | **Đã chốt** | Một backend triển khai chung, chia module rõ ràng theo nghiệp vụ |
@@ -41,7 +43,7 @@ Hệ thống phải quản lý và liên kết các đối tượng nghiệp v�
 | Version Control | **Git + GitHub** | **Đã chốt** | Lưu trữ mã nguồn, lịch sử thay đổi, pull request và review |
 | CI/CD | **GitHub-based CI/CD** | **Đã chốt về nền tảng** | Tự động build/test và triển khai theo quy trình; **GitHub Actions là đề xuất triển khai** |
 
-**Chưa chốt:** Phiên bản cụ thể của Java/Spring Boot/Node, công cụ build backend (Maven/Gradle), trình bundler frontend (Vite hoặc khác), UI library, thư viện client gọi API, phương án authentication, hosting/cloud provider, môi trường staging/production và chiến lược deployment. Các lựa chọn này sẽ được quyết định sau dựa trên yêu cầu vận hành thực tế.
+**Chưa chốt:** Toolchain Node.js chung cho nhóm, UI library, thư viện client gọi API, phương án authentication, hosting/cloud provider, môi trường staging/production và chiến lược deployment. Các lựa chọn này sẽ được quyết định sau dựa trên yêu cầu vận hành thực tế.
 
 ## 3. Nguyên tắc kiến trúc
 
@@ -182,7 +184,7 @@ Giao diện dành cho admin trong Sprint 1, không phải website khách hàng.
 - Sử dụng TypeScript cho type-safety; ưu tiên type API rõ ràng.
 - Xử lý loading, empty state, validation errors, server errors và import results nhất quán.
 - Không nhúng database credential/API secret trong frontend.
-- **Chưa chốt**: Vite/Next.js, routing, UI component library, form/state/data fetching library.
+- **Đã chọn:** Vite. **Chưa chốt:** routing, UI component library, form/state/data fetching library.
 
 ---
 
@@ -235,7 +237,7 @@ Sprint 1 hỗ trợ **admin chủ động gửi JSON**. Chưa yêu cầu schedul
 
 ### 11.1. GitHub
 
-- Một repository hay nhiều repository **chưa chốt**; monorepo là đề xuất thực dụng cho Sprint 1.
+- **Đã chọn monorepo:** backend/, frontend/, docs/ và .github/ trong cùng repository.
 - Thay đổi mã nguồn được theo dõi bằng commit và pull request.
 - Không commit `.env`, API key, database password hoặc tệp bí mật.
 - README hướng dẫn setup, cách chạy migration, test và import mẫu.
@@ -321,6 +323,9 @@ ai-football-analysis/
 
 ### Đã chốt
 
+- Backend Foundation: Java 21, Spring Boot 4.1.2, Maven Wrapper 3.9.13.
+
+- Monorepo; frontend dùng Vite và npm cùng lockfile.
 - Kiến trúc **Modular Monolith**.
 - Backend **Spring Boot**.
 - Frontend Admin **React + TypeScript**.
@@ -333,11 +338,10 @@ ai-football-analysis/
 
 ### Chưa chốt — không tự mặc định trong code
 
-- Java/JDK, Spring Boot, PostgreSQL và React phiên bản cụ thể.
-- Maven hay Gradle; build tooling frontend.
+- PostgreSQL version và chính sách phiên bản frontend cho nhóm; backend đã chọn Java 21 / Spring Boot 4.1.2 / Maven 3.9.13.
+- Frontend đã chọn Vite và npm; toolchain Node.js chung cho nhóm chưa chốt.
 - UI library, router, HTTP client, state management.
 - JWT hay session và mô hình phân quyền.
-- Monorepo hay multirepo.
 - Chiến lược ID/khóa, audit fields, enum, soft delete cụ thể.
 - ERD chi tiết, API endpoint names, DTO/schema, business validation chi tiết.
 - Import sync/async, transaction boundary, batching và dung lượng JSON tối đa.
