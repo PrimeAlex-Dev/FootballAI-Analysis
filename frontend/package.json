@@ -12,6 +12,7 @@
     "format:check": "prettier --check . ../docker-compose.yml ../.github/workflows/ci.yml ../.prettierrc.json --ignore-path ../.prettierignore"
   },
   "dependencies": {
+    "lucide-react": "^1.76.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
