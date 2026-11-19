@@ -15,6 +15,7 @@
 | Spring Boot Actuator | Health endpoint |
 | Maven Wrapper 3.9.13 | Build và quản lý dependency |
 | Spring Boot Starter Test | Bộ công cụ kiểm thử backend |
+| Spotless 3.11.0 + Eclipse formatter 4.40 | Format/check Java, 4 spaces |
 
 ## Frontend
 
@@ -25,6 +26,7 @@
 | Nginx 1.30.7 Alpine | Phục vụ frontend đã build và reverse proxy tới backend |
 | Node.js + npm | Chạy công cụ frontend và quản lý dependency |
 | Oxlint | Kiểm tra lint |
+| Prettier 3.10.1 | Format/check frontend và cấu hình được chọn |
 
 Phiên bản frontend khai báo trong frontend/package.json và được khóa trong frontend/package-lock.json. Docker build và CI dùng Node.js 24.15.0.
 
@@ -34,7 +36,7 @@ PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy c�
 
 | Công nghệ | Vai trò |
 |---|---|
-| PostgreSQL 18.7 | Database quan hệ, image Docker chính thức |
+| PostgreSQL 18.7 | Database phát triển có volume; database test riêng qua Compose profile test và tmpfs |
 | Spring Data JPA + Hibernate | Truy cập dữ liệu và ánh xạ entity |
 | Flyway | Quản lý phiên bản schema database |
 | Docker + Docker Compose | Đóng gói và chạy các thành phần ứng dụng |

@@ -2,6 +2,7 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
 
 COPY .mvn/ .mvn/
+COPY .config/ .config/
 COPY mvnw pom.xml ./
 COPY src/ src/
 # Integration tests run separately against PostgreSQL; image builds need no database.
