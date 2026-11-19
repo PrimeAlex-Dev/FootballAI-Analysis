@@ -9,7 +9,7 @@
 
 Tài liệu liên quan: [Ý tưởng Sprint 1](../requirements/ai_football_analysis_project_overview_sprint_1.md), [Tech Stack](../architecture/AI_Football_Analysis_Sprint_1_Tech_Stack.md), [AGENTS.md](../../AGENTS.md).
 
-**Trạng thái repository:** Monorepo; frontend dùng Vite + React + TypeScript với npm và Oxlint từ template; backend dùng Java 21, Spring Boot 4.1.2, Maven Wrapper 3.9.13. Chưa có Reference Module được duyệt. Định dạng cơ bản theo .editorconfig root; formatter đầy đủ chưa chốt.
+**Trạng thái repository:** Monorepo; frontend dùng Vite + React + TypeScript với npm và Oxlint từ template; backend dùng Java 21, Spring Boot 4.1.2, Maven Wrapper 3.9.13. Chưa có Reference Module được duyệt. Định dạng theo .editorconfig root; Java dùng Spotless 3.11.0 + Eclipse 4.40 (4 spaces), frontend/cấu hình được chọn dùng Prettier 3.10.1 (2 spaces). Maven spotless:apply và npm run format sửa định dạng; spotless:check và npm run format:check chỉ kiểm tra. CI bắt buộc format check.
 
 ## 1. Triết lý viết code
 

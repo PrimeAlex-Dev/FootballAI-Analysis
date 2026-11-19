@@ -6,11 +6,29 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-football_ai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or the process environment}
     ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  postgres-test:
+    image: postgres:18.7
+    profiles: [test]
+    environment:
+      POSTGRES_DB: football_ai_test
+      POSTGRES_USER: football_ai_test
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:-local-test-only}
+    ports:
+      - '127.0.0.1:${TEST_DB_PORT:-5433}:5432'
+    tmpfs:
+      - /var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,7 +45,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-football_ai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or the process environment}
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+      - '127.0.0.1:${BACKEND_PORT:-8080}:8080'
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,7 +54,7 @@ services:
     build:
       context: ./frontend
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-3000}:80"
+      - '127.0.0.1:${FRONTEND_PORT:-3000}:80'
     depends_on:
       backend:
         condition: service_healthy

@@ -1,0 +1,11 @@
+**/node_modules/**
+**/dist/**
+**/target/**
+**/coverage/**
+**/.git/**
+**/.idea/**
+**/.env*
+**/package-lock.json
+**/mvnw*
+**/*.log
+**/*.md

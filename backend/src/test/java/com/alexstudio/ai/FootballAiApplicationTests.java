@@ -13,12 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
+@ActiveProfiles("test")
 class FootballAiApplicationTests {
 
     private final EntityManagerFactory entityManagerFactory;
@@ -39,6 +39,8 @@ class FootballAiApplicationTests {
             Object result = entityManager.createNativeQuery("SELECT 1").getSingleResult();
 
             assertThat(((Number) result).intValue()).isEqualTo(1);
+            assertThat(entityManager.createNativeQuery("SELECT current_database()").getSingleResult())
+                    .isEqualTo("football_ai_test");
         }
     }
 
@@ -58,11 +60,8 @@ class FootballAiApplicationTests {
 
     @Test
     void applicationStartsAndHealthEndpointReturnsUp() throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + "/actuator/health"))
-                .timeout(Duration.ofSeconds(10))
-                .GET()
-                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/actuator/health"))
+                .timeout(Duration.ofSeconds(10)).GET().build();
 
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
