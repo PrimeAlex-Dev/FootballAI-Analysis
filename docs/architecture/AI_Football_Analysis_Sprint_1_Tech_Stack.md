@@ -30,7 +30,7 @@ Phiên bản frontend khai báo trong frontend/package.json và được khóa t
 
 ## Dữ liệu và hạ tầng
 
-PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy cả database, backend và frontend. Backend dùng Eclipse Temurin Java 21; frontend build bằng Node.js 24.15.0 rồi chạy trên Nginx. GitHub Actions có backend/frontend CI; Docker build CI thuộc task tiếp theo.
+PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy cả database, backend và frontend. Backend dùng Eclipse Temurin Java 21; frontend build bằng Node.js 24.15.0 rồi chạy trên Nginx. GitHub Actions có backend/frontend CI và build hai Docker image bằng Buildx; chưa push image hoặc deploy.
 
 | Công nghệ | Vai trò |
 |---|---|
@@ -38,7 +38,7 @@ PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy c�
 | Spring Data JPA + Hibernate | Truy cập dữ liệu và ánh xạ entity |
 | Flyway | Quản lý phiên bản schema database |
 | Docker + Docker Compose | Đóng gói và chạy các thành phần ứng dụng |
-| GitHub Actions | CI: backend build/test với PostgreSQL, frontend lint/typecheck/build |
+| GitHub Actions | CI: backend build/test với PostgreSQL, frontend lint/typecheck/build, Docker build backend/frontend |
 
 ## Quản lý mã nguồn
 
