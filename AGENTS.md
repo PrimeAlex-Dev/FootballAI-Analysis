@@ -15,12 +15,22 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 - `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate và Flyway. Chưa có entity hoặc module nghiệp vụ.
 - `frontend/`: Vite + React + TypeScript, npm và lockfile; hiện là template mặc định.
 - `docs/`: requirements, architecture và standards.
-- Compose chạy PostgreSQL 18.7 với named volume và health check. CI backend dùng PostgreSQL service riêng; frontend có lint/build. Dockerfile backend/frontend vẫn là placeholder.
+- Compose chạy PostgreSQL 18.7, backend Java 21 và frontend Nginx. PostgreSQL dùng named volume; các service có health check, backend chờ database healthy, frontend chờ backend healthy. CI hiện có backend PostgreSQL test và frontend lint/build; Docker build CI chưa triển khai.
 - Chưa có Reference Module được duyệt. Khi có module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.
 - Giữ Modular Monolith và ranh giới module theo Coding Standards. Không tự thêm dependency, tầng kiến trúc hoặc refactor ngoài yêu cầu.
 - Không tự suy diễn field, API contract, quan hệ hoặc quy tắc import chưa chốt. Nêu điểm cần quyết định và giả định quan trọng trước khi triển khai phần phụ thuộc.
 - Bảo toàn lịch sử và toàn vẹn dữ liệu; không bỏ validation hoặc xử lý lỗi để code chạy.
 - Cập nhật tài liệu khi quyết định/hành vi thay đổi; phân biệt cấu hình hiện có, quyết định đã duyệt và đề xuất.
+
+## Chạy bằng Docker
+
+- Từ root: dùng `docker compose up -d --build --wait` khi khởi tạo hoặc rebuild. Sau đó có thể Start/Stop các container trong Docker Desktop.
+- Frontend: http://localhost:3000; backend: http://localhost:8080/actuator/health; qua Nginx: http://localhost:3000/api/actuator/health. Host port đổi bằng FRONTEND_PORT/BACKEND_PORT trong .env.
+- Compose đặt DB_HOST=postgres, DB_PORT=5432 và SERVER_PORT=8080 cho backend; DB_HOST/DB_PORT trong .env dành cho chạy IDE. Khi cần chạy IDE song song, dừng container backend hoặc đổi BACKEND_PORT để tránh trùng cổng.
+- Frontend dùng đường dẫn tương đối /api/; Nginx bỏ tiền tố /api khi chuyển tới backend:8080. Đây là cấu hình proxy, chưa chốt API nghiệp vụ.
+- Dừng bằng Docker Desktop hoặc `docker compose down`; không xóa volume nếu muốn giữ dữ liệu. Sau khi đổi source, cần rebuild image; Start lại container không tự cập nhật source.
+- Backend image chỉ đóng gói JAR; build dùng -DskipTests vì không có database ở build time. Test PostgreSQL vẫn chạy riêng bằng Maven/CI.
+- Không mount .env vào image hoặc đưa secret vào frontend. Compose chỉ truyền các biến cần thiết lúc chạy backend/database.
 
 ## Kiểm tra và báo cáo
 

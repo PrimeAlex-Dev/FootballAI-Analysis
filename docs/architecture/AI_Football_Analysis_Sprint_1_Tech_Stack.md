@@ -22,14 +22,15 @@
 |---|---|
 | React + TypeScript | Giao diện quản trị Admin |
 | Vite | Dev server và production build |
+| Nginx 1.30.7 Alpine | Phục vụ frontend đã build và reverse proxy tới backend |
 | Node.js + npm | Chạy công cụ frontend và quản lý dependency |
 | Oxlint | Kiểm tra lint |
 
-Phiên bản frontend được khai báo trong frontend/package.json; phiên bản cài đặt cụ thể nằm trong frontend/package-lock.json. Phiên bản Node.js chung cho nhóm chưa chốt.
+Phiên bản frontend khai báo trong frontend/package.json và được khóa trong frontend/package-lock.json. Docker build và CI dùng Node.js 24.15.0.
 
 ## Dữ liệu và hạ tầng
 
-PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy database; GitHub Actions đã có backend/frontend CI. Docker hóa backend/frontend và Docker build CI thuộc task tiếp theo.
+PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy cả database, backend và frontend. Backend dùng Eclipse Temurin Java 21; frontend build bằng Node.js 24.15.0 rồi chạy trên Nginx. GitHub Actions có backend/frontend CI; Docker build CI thuộc task tiếp theo.
 
 | Công nghệ | Vai trò |
 |---|---|
