@@ -19,6 +19,27 @@ jobs:
     name: Backend CI
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18.7
+        env:
+          POSTGRES_DB: football_ai_test
+          POSTGRES_USER: football_ai_test
+          # Disposable CI database only; not used for local or production credentials.
+          POSTGRES_PASSWORD: ci-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U football_ai_test -d football_ai_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      POSTGRES_DB: football_ai_test
+      POSTGRES_USER: football_ai_test
+      POSTGRES_PASSWORD: ci-test-only
     defaults:
       run:
         working-directory: backend

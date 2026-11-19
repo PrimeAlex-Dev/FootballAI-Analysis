@@ -29,15 +29,15 @@ Phiên bản frontend được khai báo trong frontend/package.json; phiên b�
 
 ## Dữ liệu và hạ tầng
 
-Các công nghệ dưới đây thuộc kế hoạch thiết lập, chưa tích hợp vào ứng dụng hiện tại.
+PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy database; GitHub Actions đã có backend/frontend CI. Docker hóa backend/frontend và Docker build CI thuộc task tiếp theo.
 
 | Công nghệ | Vai trò |
 |---|---|
-| PostgreSQL | Database quan hệ |
+| PostgreSQL 18.7 | Database quan hệ, image Docker chính thức |
 | Spring Data JPA + Hibernate | Truy cập dữ liệu và ánh xạ entity |
 | Flyway | Quản lý phiên bản schema database |
 | Docker + Docker Compose | Đóng gói và chạy các thành phần ứng dụng |
-| GitHub Actions | CI: build, test, lint và Docker build |
+| GitHub Actions | CI: backend build/test với PostgreSQL, frontend lint/typecheck/build |
 
 ## Quản lý mã nguồn
 
