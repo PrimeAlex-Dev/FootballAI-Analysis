@@ -71,4 +71,24 @@ class FootballAiApplicationTests {
             assertThat(status).isEqualTo("UP");
         }
     }
+
+    @Test
+    void openApiAndSwaggerUiAreAvailable() throws Exception {
+        try (HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
+            HttpRequest docsRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:" + port + "/v3/api-docs")).timeout(Duration.ofSeconds(10)).GET()
+                    .build();
+            HttpResponse<String> docs = client.send(docsRequest, HttpResponse.BodyHandlers.ofString());
+            assertThat(docs.statusCode()).isEqualTo(200);
+            assertThat(docs.body()).contains("/api/competitions");
+            assertThat(docs.body()).doesNotContain("/actuator/health");
+
+            HttpRequest uiRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:" + port + "/swagger-ui.html")).timeout(Duration.ofSeconds(10))
+                    .GET().build();
+            HttpResponse<String> ui = client.send(uiRequest, HttpResponse.BodyHandlers.ofString());
+            assertThat(ui.statusCode()).isEqualTo(200);
+            assertThat(ui.body()).contains("swagger-ui");
+        }
+    }
 }

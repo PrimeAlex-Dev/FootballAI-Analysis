@@ -12,11 +12,11 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 
 ## Phạm vi và kiến trúc
 
-- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate và Flyway. Chưa có entity hoặc module nghiệp vụ.
+- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate, Flyway và springdoc Swagger UI. Đã có Competition và Season theo package `entity`, `dto`, `repository`, `service`, `controller`; API contract tại [Competition và Season](docs/architecture/competition-season-api.md).
 - `frontend/`: Vite + React + TypeScript, npm và lockfile; hiện là template mặc định.
 - `docs/`: requirements, architecture và standards.
 - Compose chạy PostgreSQL 18.7, backend Java 21 và frontend Nginx. PostgreSQL dùng named volume; các service có health check, backend chờ database healthy, frontend chờ backend healthy. CI có backend PostgreSQL test, frontend lint/build và Docker build riêng cho backend/frontend. Docker CI chỉ build, không push image hoặc deploy.
-- Chưa có Reference Module được duyệt. Khi có module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.
+- Competition/Season là ứng viên Reference Module, chưa được duyệt. Khi module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.
 - Giữ Modular Monolith và ranh giới module theo Coding Standards. Không tự thêm dependency, tầng kiến trúc hoặc refactor ngoài yêu cầu.
 - Không tự suy diễn field, API contract, quan hệ hoặc quy tắc import chưa chốt. Nêu điểm cần quyết định và giả định quan trọng trước khi triển khai phần phụ thuộc.
 - Bảo toàn lịch sử và toàn vẹn dữ liệu; không bỏ validation hoặc xử lý lỗi để code chạy.
@@ -38,7 +38,7 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 
 - Frontend: dùng `npm ci` để cài từ lockfile; chạy `npm run lint` và `npm run build` trong `frontend/` khi đổi code/config liên quan.
 - Backend integration test dùng @ActiveProfiles("test") và application-test.properties, chỉ kết nối football_ai_test bằng TEST_DB_HOST/TEST_DB_PORT/TEST_DB_PASSWORD; CI cũng cung cấp nhóm biến này. Local chạy service postgres-test bằng Compose profile test (mặc định cổng 5433). Service dùng tmpfs, dừng container sẽ mất dữ liệu test; không dùng volume postgres_data của phát triển. Các mặc định tài khoản test chỉ dành cho database local dùng tạm.
-- Backend: chạy `./mvnw clean verify` (Linux/macOS) hoặc `.\mvnw.cmd clean verify` (PowerShell) trong `backend/`. Trước khi chạy test, dùng `docker compose --profile test up -d --wait postgres-test` từ root. Chạy ứng dụng từ IDE vẫn dùng service postgres và cấu hình phát triển. Spring Boot import .env dạng Java properties khi working directory là root hoặc backend/; biến môi trường thực có độ ưu tiên cao hơn. Dùng KEY=value không bọc dấu nháy. Entry point chuẩn hóa alias Asia/Saigon thành Asia/Ho_Chi_Minh trước khi khởi tạo datasource, không cần JAVA_TOOL_OPTIONS. Test kiểm tra health qua HTTP, kết nối JPA và Flyway history; chưa có test nghiệp vụ.
+- Backend: chạy `./mvnw clean verify` (Linux/macOS) hoặc `.\mvnw.cmd clean verify` (PowerShell) trong `backend/`. Trước khi chạy test, dùng `docker compose --profile test up -d --wait postgres-test` từ root. Chạy ứng dụng từ IDE vẫn dùng service postgres và cấu hình phát triển. Spring Boot import .env dạng Java properties khi working directory là root hoặc backend/; biến môi trường thực có độ ưu tiên cao hơn. Dùng KEY=value không bọc dấu nháy. Entry point chuẩn hóa alias Asia/Saigon thành Asia/Ho_Chi_Minh trước khi khởi tạo datasource, không cần JAVA_TOOL_OPTIONS. Test kiểm tra health, JPA, Flyway và các luồng Competition/Season trên PostgreSQL test.
 - Thay đổi tài liệu: kiểm tra link nội bộ, tính nhất quán và `git diff --check`; không cần build lại nếu không đổi code/config ứng dụng.
 - Báo rõ thay đổi, kiểm tra đã chạy và lỗi/chặn còn tồn tại. Không báo pass nếu chưa chạy được.
 - Java: Spotless 3.11.0 + Eclipse 4.40, profile backend/.config/eclipse-formatter.xml, 4 spaces. Chạy Maven spotless:apply để format, spotless:check để kiểm tra; validate/build/verify tự check, không tự sửa.
