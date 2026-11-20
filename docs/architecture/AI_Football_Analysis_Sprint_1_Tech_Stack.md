@@ -15,6 +15,7 @@
 | Spring Boot Actuator | Health endpoint |
 | Maven Wrapper 3.9.13 | Build và quản lý dependency |
 | Spring Boot Starter Test | Bộ công cụ kiểm thử backend |
+| springdoc OpenAPI 3.2.0 | Sinh OpenAPI và cung cấp Swagger UI để thử API |
 | Spotless 3.11.0 + Eclipse formatter 4.40 | Format/check Java, 4 spaces |
 
 ## Frontend
