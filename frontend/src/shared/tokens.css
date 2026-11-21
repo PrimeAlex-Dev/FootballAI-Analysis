@@ -1,0 +1,20 @@
+.ui-template {
+  --bg: #f8faf5;
+  --surface: #fff;
+  --text: #111;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --soft: #f4f6f3;
+  --accent: #99ff33;
+  --accent-soft: #e6facf;
+}
+.ui-template[data-theme='dark'] {
+  --bg: #0f1115;
+  --surface: #171a21;
+  --text: #f5f7fa;
+  --muted: #a1a1aa;
+  --border: #2a2f3a;
+  --soft: #20242c;
+  --accent-soft: #2e461e;
+  color-scheme: dark;
+}

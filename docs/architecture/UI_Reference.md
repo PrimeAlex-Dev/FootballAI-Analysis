@@ -7,3 +7,5 @@ CSS variables trong .ui-template định nghĩa light/dark, màu nhấn #99FF33,
 Dùng CSS thuần và lucide-react cho icon thống nhất. Chưa cần Tailwind/shadcn, Recharts, TanStack Table cho mẫu tĩnh. Biểu đồ SVG minh họa; bảng semantic HTML chưa có sorting/filtering. Các thư viện còn lại được đánh giá khi có yêu cầu tương tác cụ thể.
 
 Khi làm module, tham chiếu trang này cho giao diện và tuân thủ Coding Standards cùng Reference Module được duyệt cho kiến trúc, contract, hành vi. Không chuyển nhãn và dữ liệu minh họa thành nghiệp vụ mặc định.
+
+Dashboard thật: xem [Dashboard quản trị dữ liệu](dashboard-ui.md). Tokens màu đã tách vào frontend/src/shared/tokens.css để dùng chung; trang mẫu giữ riêng tại /template-ui.

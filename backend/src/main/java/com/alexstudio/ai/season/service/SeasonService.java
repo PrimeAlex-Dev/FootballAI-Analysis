@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,8 +43,17 @@ public class SeasonService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SeasonResponse> list(int page, int size) {
-        return seasons.findAll(PageRequest.of(page, size, Sort.by("name").descending().and(Sort.by("id").descending())))
+    public Page<SeasonResponse> list(String name, int page, int size) {
+        Specification<Season> filter = (root, query, builder) -> builder.conjunction();
+        if (name != null && !name.isBlank()) {
+            String search = name.trim().toLowerCase(java.util.Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%")
+                    .replace("_", "\\_");
+            filter = filter.and(
+                    (root, query, builder) -> builder.like(builder.lower(root.get("name")), "%" + search + "%", '\\'));
+        }
+        return seasons
+                .findAll(filter,
+                        PageRequest.of(page, size, Sort.by("name").descending().and(Sort.by("id").descending())))
                 .map(SeasonResponse::from);
     }
 

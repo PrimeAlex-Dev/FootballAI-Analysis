@@ -30,9 +30,10 @@ public class SeasonController {
     }
 
     @GetMapping
-    public PagedModel<SeasonResponse> list(@RequestParam(defaultValue = "0") @Min(0) int page,
+    public PagedModel<SeasonResponse> list(@RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return new PagedModel<>(service.list(page, size));
+        return new PagedModel<>(service.list(name, page, size));
     }
 
     @PutMapping("/{id}")

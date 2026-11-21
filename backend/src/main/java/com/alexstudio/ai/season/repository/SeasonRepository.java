@@ -4,11 +4,10 @@ import com.alexstudio.ai.season.entity.Season;
 
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface SeasonRepository extends JpaRepository<Season, Long> {
+public interface SeasonRepository extends JpaRepository<Season, Long>, JpaSpecificationExecutor<Season> {
 
     boolean existsByName(String name);
 
