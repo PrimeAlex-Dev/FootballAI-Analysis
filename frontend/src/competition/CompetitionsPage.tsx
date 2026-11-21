@@ -1,5 +1,5 @@
 import { useList } from '../shared/useList'
-import CompetitionLogo from './CompetitionLogo'
+import EntityLogo from '../shared/EntityLogo'
 import { competitionApi } from './api'
 import CompetitionForm from './CompetitionForm'
 import {
@@ -79,7 +79,7 @@ export default function CompetitionsPage() {
               <td>#{item.id}</td>
               <td>
                 <span className="competition-name">
-                  <CompetitionLogo
+                  <EntityLogo
                     key={item.logo}
                     name={item.name}
                     logo={item.logo}

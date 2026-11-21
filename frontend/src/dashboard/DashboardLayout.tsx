@@ -7,11 +7,18 @@ import {
   Moon,
   Sun,
   Trophy,
+  Users,
 } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import '../template-ui/template-ui.css'
 import './dashboard.css'
 const entries = [
+  {
+    path: '/dashboard/teams',
+    label: 'Đội bóng',
+    description: 'Quản lý câu lạc bộ và đội tuyển quốc gia.',
+    icon: Users,
+  },
   {
     path: '/dashboard/competitions',
     label: 'Giải đấu',

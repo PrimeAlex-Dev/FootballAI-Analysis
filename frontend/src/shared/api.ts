@@ -8,6 +8,10 @@ export interface Page<T> {
   }
 }
 const messages: Record<string, string> = {
+  'Team name already exists': 'Tên đội bóng đã tồn tại.',
+  'Competition name already exists': 'Tên giải đấu đã tồn tại.',
+  'Team has dependent data': 'Đội bóng có dữ liệu phụ thuộc, không thể xóa.',
+  'Team not found': 'Đội bóng không còn tồn tại.',
   'Competition is in use': 'Giải đấu đang được sử dụng, không thể xóa.',
   'Competition has dependent data': 'Giải đấu có dữ liệu phụ thuộc.',
   'Season is in use': 'Mùa giải đang được sử dụng, không thể sửa hoặc xóa.',
