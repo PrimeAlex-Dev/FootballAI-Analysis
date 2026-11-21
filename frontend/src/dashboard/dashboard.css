@@ -357,3 +357,104 @@
     flex-wrap: wrap;
   }
 }
+.match-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.match-form-grid .admin-field {
+  min-width: 0;
+}
+.match-picker-search {
+  display: flex;
+  gap: 6px;
+}
+.match-picker-search input {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px;
+  font: inherit;
+}
+.match-picker-search button {
+  flex-shrink: 0;
+}
+.match-score {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.match-subtext {
+  display: block;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.match-status-live {
+  color: #398900;
+  border-color: #71bd26;
+  background: var(--accent-soft);
+}
+.admin .match-status-live {
+  white-space: nowrap;
+}
+.admin time {
+  font-size: 12px;
+}
+.admin .match-form-grid select {
+  max-width: 100%;
+}
+@media (max-width: 480px) {
+  .match-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.admin .match-management table {
+  min-width: 1100px;
+}
+.admin .match-management td:nth-child(2),
+.admin .match-management td:nth-child(4) {
+  min-width: 160px;
+}
+.admin .match-management td:nth-child(6) {
+  min-width: 130px;
+}
+/* Keep native selects and search controls inside their Match grid columns. */
+.match-catalog-select {
+  min-width: 0;
+  max-width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+.match-catalog-select .admin-field,
+.match-catalog-select select,
+.match-form > *,
+.match-form .admin-field,
+.match-form input,
+.match-form select {
+  min-width: 0;
+  max-width: 100%;
+}
+.match-catalog-select .match-picker-search {
+  min-width: 0;
+}
+.match-catalog-select .match-picker-search input {
+  flex: 1 1 0;
+  width: 0;
+}
+.match-catalog-select select {
+  text-overflow: ellipsis;
+}
+.match-catalog-select .error-notice,
+.match-form .admin-field > span,
+.match-form .admin-field small {
+  overflow-wrap: anywhere;
+}
+.admin .filter-bar > .match-catalog-select {
+  flex: 0 1 260px;
+}
+@media (max-width: 760px) {
+  .admin .filter-bar > .match-catalog-select {
+    flex-basis: 100%;
+  }
+}

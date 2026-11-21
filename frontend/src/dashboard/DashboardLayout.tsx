@@ -8,11 +8,18 @@ import {
   Sun,
   Trophy,
   Users,
+  CalendarClock,
 } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import '../template-ui/template-ui.css'
 import './dashboard.css'
 const entries = [
+  {
+    path: '/dashboard/matches',
+    label: 'Trận đấu',
+    description: 'Quản lý lịch thi đấu và kết quả trận đấu.',
+    icon: CalendarClock,
+  },
   {
     path: '/dashboard/teams',
     label: 'Đội bóng',
