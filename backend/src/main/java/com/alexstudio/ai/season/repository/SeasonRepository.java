@@ -10,11 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SeasonRepository extends JpaRepository<Season, Long> {
 
-    boolean existsByCompetition_Id(Long competitionId);
+    boolean existsByName(String name);
 
-    boolean existsByCompetition_IdAndName(Long competitionId, String name);
-
-    Optional<Season> findByIdAndCompetition_Id(Long id, Long competitionId);
-
-    Page<Season> findByCompetition_Id(Long competitionId, Pageable pageable);
+    Optional<Season> findByName(String name);
 }

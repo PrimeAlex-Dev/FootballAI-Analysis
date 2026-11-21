@@ -6,7 +6,7 @@ import com.alexstudio.ai.competition.dto.CompetitionResponse;
 import com.alexstudio.ai.competition.entity.Competition;
 import com.alexstudio.ai.competition.entity.CompetitionType;
 import com.alexstudio.ai.competition.repository.CompetitionRepository;
-import com.alexstudio.ai.season.repository.SeasonRepository;
+import com.alexstudio.ai.competitionseason.repository.CompetitionSeasonRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompetitionService {
 
     private final CompetitionRepository competitions;
-    private final SeasonRepository seasons;
+    private final CompetitionSeasonRepository competitionSeasons;
 
-    public CompetitionService(CompetitionRepository competitions, SeasonRepository seasons) {
+    public CompetitionService(CompetitionRepository competitions, CompetitionSeasonRepository competitionSeasons) {
         this.competitions = competitions;
-        this.seasons = seasons;
+        this.competitionSeasons = competitionSeasons;
     }
 
     @Transactional
@@ -63,8 +63,8 @@ public class CompetitionService {
     @Transactional
     public void delete(Long id) {
         Competition competition = find(id);
-        if (seasons.existsByCompetition_Id(id)) {
-            throw new BusinessException(HttpStatus.CONFLICT, "Competition has seasons");
+        if (competitionSeasons.existsByCompetition_Id(id)) {
+            throw new BusinessException(HttpStatus.CONFLICT, "Competition is in use");
         }
         try {
             competitions.delete(competition);

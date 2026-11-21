@@ -5,6 +5,8 @@ import java.util.List;
 import com.alexstudio.ai.competition.entity.Competition;
 import com.alexstudio.ai.competition.entity.CompetitionType;
 import com.alexstudio.ai.competition.repository.CompetitionRepository;
+import com.alexstudio.ai.competitionseason.entity.CompetitionSeason;
+import com.alexstudio.ai.competitionseason.repository.CompetitionSeasonRepository;
 import com.alexstudio.ai.season.entity.Season;
 import com.alexstudio.ai.season.repository.SeasonRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -16,10 +18,13 @@ public class DataInitializer implements CommandLineRunner {
 
     private final CompetitionRepository competitionRepository;
     private final SeasonRepository seasonRepository;
+    private final CompetitionSeasonRepository competitionSeasonRepository;
 
-    public DataInitializer(CompetitionRepository competitionRepository, SeasonRepository seasonRepository) {
+    public DataInitializer(CompetitionRepository competitionRepository, SeasonRepository seasonRepository,
+            CompetitionSeasonRepository competitionSeasonRepository) {
         this.competitionRepository = competitionRepository;
         this.seasonRepository = seasonRepository;
+        this.competitionSeasonRepository = competitionSeasonRepository;
     }
 
     @Override
@@ -36,8 +41,11 @@ public class DataInitializer implements CommandLineRunner {
                     .orElseGet(() -> competitionRepository.save(new Competition(seed.name(), seed.type(), null)));
 
             for (String seasonName : seed.seasons()) {
-                if (!seasonRepository.existsByCompetition_IdAndName(competition.getId(), seasonName)) {
-                    seasonRepository.save(new Season(competition, seasonName));
+                Season season = seasonRepository.findByName(seasonName)
+                        .orElseGet(() -> seasonRepository.save(new Season(seasonName)));
+                if (!competitionSeasonRepository.existsByCompetition_IdAndSeason_Id(competition.getId(),
+                        season.getId())) {
+                    competitionSeasonRepository.save(new CompetitionSeason(competition, season));
                 }
             }
         }

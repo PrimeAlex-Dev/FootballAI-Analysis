@@ -12,11 +12,11 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 
 ## Phạm vi và kiến trúc
 
-- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate, Flyway và springdoc Swagger UI. Đã có Competition và Season theo package `entity`, `dto`, `repository`, `service`, `controller`; API contract tại [Competition và Season](docs/architecture/competition-season-api.md).
+- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate, Flyway và springdoc Swagger UI. Có Competition, Season độc lập và CompetitionSeason theo package `entity`, `dto`, `repository`, `service`, `controller`; API contract tại [Competition, Season và CompetitionSeason](docs/architecture/competition-season-api.md).
 - `frontend/`: Vite + React + TypeScript, npm và lockfile; hiện là template mặc định.
 - `docs/`: requirements, architecture và standards.
 - Compose chạy PostgreSQL 18.7, backend Java 21 và frontend Nginx. PostgreSQL dùng named volume; các service có health check, backend chờ database healthy, frontend chờ backend healthy. CI có backend PostgreSQL test, frontend lint/build và Docker build riêng cho backend/frontend. Docker CI chỉ build, không push image hoặc deploy.
-- Competition/Season là ứng viên Reference Module, chưa được duyệt. Khi module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.
+- Competition/Season/CompetitionSeason là ứng viên Reference Module, chưa được duyệt. Khi module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.
 - Giữ Modular Monolith và ranh giới module theo Coding Standards. Không tự thêm dependency, tầng kiến trúc hoặc refactor ngoài yêu cầu.
 - Không tự suy diễn field, API contract, quan hệ hoặc quy tắc import chưa chốt. Nêu điểm cần quyết định và giả định quan trọng trước khi triển khai phần phụ thuộc.
 - Bảo toàn lịch sử và toàn vẹn dữ liệu; không bỏ validation hoặc xử lý lỗi để code chạy.
@@ -27,7 +27,7 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 - Từ root: dùng `docker compose up -d --build --wait` khi khởi tạo hoặc rebuild. Sau đó có thể Start/Stop các container trong Docker Desktop.
 - Frontend: http://localhost:3000; backend: http://localhost:8080/actuator/health; qua Nginx: http://localhost:3000/actuator/health. Host port đổi bằng FRONTEND_PORT/BACKEND_PORT trong .env.
 - Compose đặt DB_HOST=postgres, DB_PORT=5432 và SERVER_PORT=8080 cho backend; DB_HOST/DB_PORT trong .env dành cho chạy IDE. Khi cần chạy IDE song song, dừng container backend hoặc đổi BACKEND_PORT để tránh trùng cổng.
-- Frontend dùng đường dẫn tương đối /api/; backend sở hữu tiền tố /api, Vite và Nginx giữ nguyên đường dẫn. Chưa có controller nghiệp vụ. Health kỹ thuật giữ /actuator/health, được proxy riêng và không expose các Actuator endpoint khác. Vite đọc DEV_API_TARGET từ .env root (mặc định http://localhost:8080); chỉ đọc nhóm DEV_, không đưa mật khẩu database vào frontend.
+- Frontend dùng đường dẫn tương đối /api/; backend sở hữu tiền tố /api, Vite và Nginx giữ nguyên đường dẫn. Health kỹ thuật giữ /actuator/health, được proxy riêng và không expose các Actuator endpoint khác. Vite đọc DEV_API_TARGET từ .env root (mặc định http://localhost:8080); chỉ đọc nhóm DEV_, không đưa mật khẩu database vào frontend.
 - Dừng bằng Docker Desktop hoặc `docker compose down`; không xóa volume nếu muốn giữ dữ liệu. Sau khi đổi source, cần rebuild image; Start lại container không tự cập nhật source.
 - Backend image chỉ đóng gói JAR; build dùng -DskipTests vì không có database ở build time. Test PostgreSQL vẫn chạy riêng bằng Maven/CI.
 - Không mount .env vào image hoặc đưa secret vào frontend. Compose chỉ truyền các biến cần thiết lúc chạy backend/database.

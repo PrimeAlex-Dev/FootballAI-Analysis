@@ -1,26 +1,18 @@
-# Competition và Season API
+# Competition, Season và CompetitionSeason API
 
-**Trạng thái:** Triển khai đầu tiên, chờ review để quyết định Reference Module. Tài liệu ý tưởng Sprint 1 không thay thế contract này.
+**Trạng thái:** Thiết kế ba module theo yêu cầu hiện tại; Competition và Season là danh mục độc lập.
 
-## Đường dẫn và phản hồi
-
-Backend sở hữu tiền tố `/api`; Vite và Nginx chuyển tiếp nguyên đường dẫn. Chưa có quy ước versioning trong repository, vì vậy các endpoint hiện chưa mang version. `GET` chi tiết và `PUT` trả DTO; `POST` trả DTO với HTTP 201; `DELETE` trả 204. Lỗi dùng Spring `ProblemDetail` với HTTP 400, 404 hoặc 409. Danh sách dùng Spring Data `PagedModel`: `content` và `page` (`size`, `number`, `totalElements`, `totalPages`). Trang bắt đầu từ 0, kích thước mặc định 20 và tối đa 100.
-
-Swagger UI chạy trực tiếp trên backend tại `http://localhost:8080/swagger-ui.html`; OpenAPI JSON tại `http://localhost:8080/v3/api-docs`. Có thể dùng **Try it out** để gửi request tới backend. Khi đổi `BACKEND_PORT` của Docker Compose, dùng cổng host tương ứng. OpenAPI chỉ liệt kê các đường dẫn `/api/**`; endpoint sức khỏe `/actuator/health` không thuộc tài liệu nghiệp vụ.
+Backend dùng tiền tố `/api` theo proxy hiện có. Swagger UI: `http://localhost:8080/swagger-ui.html`; OpenAPI: `http://localhost:8080/v3/api-docs`. Chưa dùng `/api/v1` vì repository chưa chốt versioning. Danh sách trả `content` và `page`, trang từ 0, kích thước mặc định 20, tối đa 100. Lỗi trả Spring `ProblemDetail`.
 
 | Method | Path | Chức năng |
 |---|---|---|
-| POST | `/api/competitions` | Tạo giải đấu |
-| GET | `/api/competitions/{id}` | Chi tiết giải đấu |
-| GET | `/api/competitions?name=&type=&page=&size=` | Tìm theo tên, lọc loại, phân trang; sắp `name ASC, id ASC` |
-| PUT | `/api/competitions/{id}` | Thay `name`, `type`, `logo` |
-| DELETE | `/api/competitions/{id}` | Xóa nếu chưa có Season |
-| POST | `/api/competitions/{competitionId}/seasons` | Tạo mùa giải |
-| GET | `/api/competitions/{competitionId}/seasons/{id}` | Chi tiết mùa giải |
-| GET | `/api/competitions/{competitionId}/seasons?page=&size=` | Danh sách mùa giải; sắp `name DESC, id DESC` |
-| PUT | `/api/competitions/{competitionId}/seasons/{id}` | Đổi tên mùa giải |
-| DELETE | `/api/competitions/{competitionId}/seasons/{id}` | Xóa nếu không bị dữ liệu khác tham chiếu |
+| POST, GET | `/api/competitions` | Tạo; danh sách tìm theo `name`, lọc `type`, phân trang |
+| GET, PUT, DELETE | `/api/competitions/{id}` | Chi tiết; cập nhật; xóa khi chưa được sử dụng |
+| POST, GET | `/api/seasons` | Tạo; danh sách phân trang |
+| GET, PUT, DELETE | `/api/seasons/{id}` | Chi tiết; đổi tên hoặc xóa khi chưa được sử dụng |
+| POST, GET | `/api/competition-seasons` | Tạo từ `competitionId` và `seasonId`; danh sách lọc bằng hai ID, phân trang |
+| GET, DELETE | `/api/competition-seasons/{id}` | Chi tiết; xóa khi không có dữ liệu phụ thuộc |
 
-Competition request: `{ "name": "Premier League", "type": "LEAGUE", "logo": null }`; response có thêm `id`. `type` chỉ nhận `LEAGUE` hoặc `CUP`. Season request: `{ "name": "2026/2027" }`; response gồm `id`, `competitionId`, `name`. Competition ID lấy từ path; không nhận thay đổi quan hệ trong request. Tên và logo được cắt khoảng trắng đầu/cuối trước khi lưu. Season name chỉ nhận `YYYY` hoặc hai năm liên tiếp `YYYY/YYYY`; sắp xếp theo chuỗi giảm dần, phù hợp các năm bốn chữ số.
+Competition có `id`, `name`, `type` (`LEAGUE` hoặc `CUP`), `logo`. Season có `id`, `name` duy nhất toàn hệ thống; tên hợp lệ là `YYYY` hoặc hai năm liên tiếp `YYYY/YYYY`. CompetitionSeason có `id`, `competitionId`, `seasonId`; response ghép thêm `displayName` từ tên giải và tên mùa, không lưu cột này. Liên kết không được cập nhật sau khi tạo.
 
-Flyway V1 tạo `competitions`, `seasons`, khóa ngoại không cascade và ràng buộc duy nhất `(competition_id, name)`. Unique constraint cung cấp index với cột đầu là `competition_id`, dùng cho truy vấn danh sách theo giải đấu. PostgreSQL từ chối tên rỗng, loại giải không hợp lệ, mùa giải sai cấu trúc, trùng tên trong cùng giải và quan hệ mồ côi. Quy tắc hai năm liên tiếp được kiểm tra ở service. Không có bảng cho các module tương lai trong migration này.
+Flyway V2 giữ V1 nguyên vẹn, chuyển từng liên kết Competition–Season cũ sang `competition_seasons`, hợp nhất các Season trùng tên theo ID nhỏ nhất, rồi đặt unique toàn cục trên `seasons.name`. FK không cascade; unique `(competition_id, season_id)` và index `season_id` phục vụ truy vấn. Initial Data tạo bốn Competition mẫu, dùng lại Season cùng tên và chỉ thêm liên kết thiếu khi backend khởi động.
