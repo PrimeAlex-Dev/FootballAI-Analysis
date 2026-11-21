@@ -12,8 +12,8 @@ Coding Standards là nguồn quy tắc code chi tiết; không thay thế bằng
 
 ## Phạm vi và kiến trúc
 
-- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate, Flyway và springdoc Swagger UI. Có Team (độc lập, contract tại [Team API](docs/architecture/team-api.md)), Competition, Season độc lập và CompetitionSeason theo package `entity`, `dto`, `repository`, `service`, `controller`; API contract tại [Competition, Season và CompetitionSeason](docs/architecture/competition-season-api.md).
-- `frontend/`: Vite + React + TypeScript, npm và lockfile; có dashboard quản trị Team/Competition/Season/CompetitionSeason tại `/dashboard` và mẫu thiết kế riêng `/template-ui`. Quy ước tại [Dashboard UI](docs/architecture/dashboard-ui.md).
+- `backend/`: Spring Boot 4.1.2, Java 21, Maven Wrapper 3.9.13; có Spring MVC, Actuator, PostgreSQL, Spring Data JPA/Hibernate, Flyway và springdoc Swagger UI. Có Match (contract tại [Match API](docs/architecture/match-api.md)) và Team (độc lập, contract tại [Team API](docs/architecture/team-api.md)), Competition, Season độc lập và CompetitionSeason theo package `entity`, `dto`, `repository`, `service`, `controller`; API contract tại [Competition, Season và CompetitionSeason](docs/architecture/competition-season-api.md).
+- `frontend/`: Vite + React + TypeScript, npm và lockfile; có dashboard quản trị Match/Team/Competition/Season/CompetitionSeason tại `/dashboard` và mẫu thiết kế riêng `/template-ui`. Quy ước tại [Dashboard UI](docs/architecture/dashboard-ui.md).
 - `docs/`: requirements, architecture và standards.
 - Compose chạy PostgreSQL 18.7, backend Java 21 và frontend Nginx. PostgreSQL dùng named volume; các service có health check, backend chờ database healthy, frontend chờ backend healthy. CI có backend PostgreSQL test, frontend lint/build và Docker build riêng cho backend/frontend. Docker CI chỉ build, không push image hoặc deploy.
 - Competition/Season/CompetitionSeason là ứng viên Reference Module, chưa được duyệt. Khi module mẫu được duyệt, đọc và bám sát trước khi thêm module tiếp theo.

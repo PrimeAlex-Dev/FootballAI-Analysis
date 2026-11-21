@@ -8,6 +8,17 @@ export interface Page<T> {
   }
 }
 const messages: Record<string, string> = {
+  'Match status is required when updating':
+    'Phải chọn trạng thái khi cập nhật trận đấu.',
+  'Match not found': 'Trận đấu không còn tồn tại.',
+  'Home and away teams must be different':
+    'Đội nhà và đội khách phải khác nhau.',
+  'Both scores must be provided together':
+    'Phải nhập đủ hai tỷ số hoặc để trống cả hai.',
+  'Finished match requires both scores':
+    'Trận kết thúc bắt buộc có đủ hai tỷ số.',
+  'Start time must not be after end time':
+    'Thời gian bắt đầu lọc phải trước hoặc bằng thời gian kết thúc.',
   'Team name already exists': 'Tên đội bóng đã tồn tại.',
   'Competition name already exists': 'Tên giải đấu đã tồn tại.',
   'Team has dependent data': 'Đội bóng có dữ liệu phụ thuộc, không thể xóa.',

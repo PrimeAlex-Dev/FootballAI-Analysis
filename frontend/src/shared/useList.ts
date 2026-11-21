@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { errorMessage, type Page } from './api'
 
@@ -52,6 +52,7 @@ export function useList<T>(
     })
     setParams(next)
   }
+  const refresh = useCallback(() => setRevision((value) => value + 1), [])
   return {
     params,
     data,
@@ -60,7 +61,7 @@ export function useList<T>(
     page,
     size,
     change,
-    refresh: () => setRevision((value) => value + 1),
+    refresh,
     go: (value: number) => {
       const next = new URLSearchParams(params)
       next.set('page', String(value))
