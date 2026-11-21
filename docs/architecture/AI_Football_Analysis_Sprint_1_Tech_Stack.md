@@ -49,3 +49,5 @@ PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy c�
 - **GitHub Flow + Merge Commit:** quy trình tích hợp thay đổi vào main.
 
 Frontend quản trị dùng React Router để điều hướng, Lucide React cho icon và CSS variables cho theme. Chi tiết tại [Dashboard UI](dashboard-ui.md).
+
+Backend Docker build khởi tạo Maven Wrapper tối đa 3 lần, chờ 10/20 giây giữa các lần thất bại để giảm lỗi tải tạm thời (HTTP 429). Bước package vẫn chạy một lần, giữ format check và -DskipTests; test PostgreSQL chạy riêng trong Backend CI.
