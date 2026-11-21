@@ -47,3 +47,5 @@ PostgreSQL, JPA/Hibernate và Flyway đã tích hợp. Docker Compose chạy c�
 
 - **Git + GitHub:** quản lý phiên bản, Pull Request và review.
 - **GitHub Flow + Merge Commit:** quy trình tích hợp thay đổi vào main.
+
+Frontend quản trị dùng React Router để điều hướng, Lucide React cho icon và CSS variables cho theme. Chi tiết tại [Dashboard UI](dashboard-ui.md).

@@ -45,6 +45,32 @@ class CompetitionSeasonApiTests {
         assertThat(request("DELETE", "/api/competitions/" + competitionId, null).statusCode()).isEqualTo(204);
     }
 
+    @Test
+    void searchSeasonsByNameWithServerPagination() throws Exception {
+        int first = id(request("POST", "/api/seasons", "{\"name\":\"2190/2191\"}"));
+        int second = id(request("POST", "/api/seasons", "{\"name\":\"2191/2192\"}"));
+        try {
+            HttpResponse<String> page = request("GET", "/api/seasons?name=%202191%20&size=1&page=0", null);
+            assertThat(page.statusCode()).isEqualTo(200);
+            assertThat(JsonPath.<Integer>read(page.body(), "$.page.totalElements")).isEqualTo(2);
+            assertThat(JsonPath.<String>read(page.body(), "$.content[0].name")).isEqualTo("2191/2192");
+            HttpResponse<String> next = request("GET", "/api/seasons?name=2191&size=1&page=1", null);
+            assertThat(JsonPath.<String>read(next.body(), "$.content[0].name")).isEqualTo("2190/2191");
+            assertThat(JsonPath.<Integer>read(request("GET", "/api/seasons?name=not-found", null).body(),
+                    "$.page.totalElements")).isZero();
+            for (String literal : new String[]{"%25", "_", "%5C"}) {
+                assertThat(JsonPath.<Integer>read(request("GET", "/api/seasons?name=" + literal, null).body(),
+                        "$.page.totalElements")).isZero();
+            }
+            int all = JsonPath.read(request("GET", "/api/seasons", null).body(), "$.page.totalElements");
+            assertThat(JsonPath.<Integer>read(request("GET", "/api/seasons?name=%20%20", null).body(),
+                    "$.page.totalElements")).isEqualTo(all);
+        } finally {
+            assertThat(request("DELETE", "/api/seasons/" + first, null).statusCode()).isEqualTo(204);
+            assertThat(request("DELETE", "/api/seasons/" + second, null).statusCode()).isEqualTo(204);
+        }
+    }
+
     private int id(HttpResponse<String> response) {
         assertThat(response.statusCode()).isEqualTo(201);
         return JsonPath.read(response.body(), "$.id");
