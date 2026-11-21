@@ -37,3 +37,5 @@ Không thay đổi backend. Chưa kiểm tra tự động toàn bộ tổ hợp 
 
 Tìm kiếm mùa giải dùng tham số name ở backend, giữ từ khóa trong URL và về trang đầu khi tìm/đặt lại. Không tải toàn bộ mùa giải để lọc tại frontend.
 
+
+Module Đội bóng: /dashboard/teams; CRUD, chi tiết, tìm tên, lọc loại và phân trang server. Contract và kết quả kiểm tra tại [Team API](team-api.md). Logo dùng EntityLogo chung với Competition.

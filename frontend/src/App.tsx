@@ -1,3 +1,4 @@
+import TeamsPage from './team/TeamsPage'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import TemplateUi from './template-ui/TemplateUi'
 import DashboardLayout, { DashboardHome } from './dashboard/DashboardLayout'
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="competitions" element={<CompetitionsPage />} />
+          <Route path="teams" element={<TeamsPage />} />
           <Route path="seasons" element={<SeasonsPage />} />
           <Route
             path="competition-seasons"

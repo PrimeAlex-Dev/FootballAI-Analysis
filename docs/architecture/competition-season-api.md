@@ -17,3 +17,5 @@ Competition có `id`, `name`, `type` (`LEAGUE` hoặc `CUP`), `logo`. Season có
 
 Flyway V2 giữ V1 nguyên vẹn, chuyển từng liên kết Competition–Season cũ sang `competition_seasons`, hợp nhất các Season trùng tên theo ID nhỏ nhất, rồi đặt unique toàn cục trên `seasons.name`. FK không cascade; unique `(competition_id, season_id)` và index `season_id` phục vụ truy vấn. Initial Data tạo bốn Competition mẫu, dùng lại Season cùng tên và chỉ thêm liên kết thiếu khi backend khởi động.
 Tìm mùa giải: GET /api/seasons?name=2026&page=0&size=20. Tên được trim, tìm chứa chuỗi trên toàn bộ danh mục trước khi phân trang; bỏ name hoặc chỉ nhập khoảng trắng trả danh sách không lọc. Các ký tự %, _ và dấu gạch chéo ngược được tìm theo nghĩa literal. Giữ sắp xếp tên giảm dần, rồi ID giảm dần.
+
+Tên Competition duy nhất toàn danh mục, không phụ thuộc LEAGUE/CUP, không phân biệt hoa/thường và trim đầu/cuối. POST/PUT trùng tên trả 409 (Competition name already exists); cập nhật chính bản ghi giữ tên vẫn hợp lệ. Flyway V4 bổ sung unique index lower(name), không sửa migration cũ hoặc tự xử lý bản ghi trùng đã có.

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-export default function CompetitionLogo({
+export default function EntityLogo({
   name,
   logo,
 }: {

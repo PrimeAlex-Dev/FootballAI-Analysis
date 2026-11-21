@@ -29,8 +29,16 @@ public class CompetitionService {
 
     @Transactional
     public CompetitionResponse create(CompetitionRequest request) {
-        Competition competition = new Competition(request.name().trim(), request.type(), normalizeLogo(request.logo()));
-        return CompetitionResponse.from(competitions.save(competition));
+        String name = request.name().trim();
+        if (competitions.existsByNameIgnoreCase(name)) {
+            throw duplicate();
+        }
+        Competition competition = new Competition(name, request.type(), normalizeLogo(request.logo()));
+        try {
+            return CompetitionResponse.from(competitions.saveAndFlush(competition));
+        } catch (DataIntegrityViolationException exception) {
+            throw duplicate();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +64,16 @@ public class CompetitionService {
     @Transactional
     public CompetitionResponse update(Long id, CompetitionRequest request) {
         Competition competition = find(id);
-        competition.update(request.name().trim(), request.type(), normalizeLogo(request.logo()));
+        String name = request.name().trim();
+        if (competitions.existsByNameIgnoreCaseAndIdNot(name, id)) {
+            throw duplicate();
+        }
+        competition.update(name, request.type(), normalizeLogo(request.logo()));
+        try {
+            competitions.flush();
+        } catch (DataIntegrityViolationException exception) {
+            throw duplicate();
+        }
         return CompetitionResponse.from(competition);
     }
 
@@ -77,6 +94,10 @@ public class CompetitionService {
     public Competition find(Long id) {
         return competitions.findById(id)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Competition not found"));
+    }
+
+    private BusinessException duplicate() {
+        return new BusinessException(HttpStatus.CONFLICT, "Competition name already exists");
     }
 
     private String normalizeLogo(String logo) {
