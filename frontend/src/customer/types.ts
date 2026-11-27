@@ -28,6 +28,11 @@ export type Match = {
   homeScore: number | null
   awayScore: number | null
   round: string | null
+  competitionSeasonName?: string
+  homeTeamName?: string
+  homeTeamLogo?: string | null
+  awayTeamName?: string
+  awayTeamLogo?: string | null
 }
 export type Prediction = {
   matchId: number

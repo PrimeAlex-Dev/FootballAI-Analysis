@@ -22,9 +22,10 @@ import {
   useOutletContext,
   useParams,
 } from 'react-router-dom'
-import { competitionSeasons, todayKey } from './mock'
+import { todayKey } from './mock'
 import {
   competitionSeason,
+  getCompetitionSeasons,
   dateLabel,
   getHeadToHead,
   getMatchById,
@@ -192,7 +193,7 @@ export function CustomerLayout() {
       <footer className="customer-footer">
         <span>Football AI</span>
         <span>
-          Giao diện minh họa · Dữ liệu mẫu, không phải dự đoán thực tế
+          Trận đấu từ hệ thống · Nội dung phân tích đang dùng dữ liệu mẫu
         </span>
       </footer>
     </div>
@@ -206,6 +207,7 @@ export function MatchOverviewPage() {
   const [status, setStatus] = useState<Status | null>(null)
   const [shown, setShown] = useState(4)
   const [collapsed, setCollapsed] = useState<number[]>([])
+  const catalog = useAsync(getCompetitionSeasons, [])
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(searchInput), 280)
     return () => clearTimeout(timeout)
@@ -226,12 +228,12 @@ export function MatchOverviewPage() {
     [date, search, competitionId, status],
   )
   const visible = result.data?.slice(0, shown) ?? []
-  const groups = competitionSeasons
-    .map((link) => ({
-      link,
-      items: visible.filter((match) => match.competitionSeasonId === link.id),
-    }))
-    .filter(({ items }) => items.length)
+  const groups = Array.from(
+    new Set(visible.map((match) => match.competitionSeasonId)),
+  ).map((id) => ({
+    id,
+    items: visible.filter((match) => match.competitionSeasonId === id),
+  }))
   const dates = [-2, -1, 0, 1, 2].map((offset) => dayOffset(date, offset))
   const title =
     date === todayKey
@@ -250,7 +252,7 @@ export function MatchOverviewPage() {
         <div className="hero-side">
           <span>{result.data?.length ?? 0}</span>
           <small>
-            trận trong bộ dữ liệu mẫu
+            trận từ hệ thống
             <br />
             cho ngày đã chọn
           </small>
@@ -341,15 +343,14 @@ export function MatchOverviewPage() {
             >
               Tất cả giải đấu
             </button>
-            {competitionSeasons.map((link) => {
-              const data = competitionSeason(link.id)
+            {catalog.data?.map((link) => {
               return (
                 <button
                   key={link.id}
                   className={`filter-chip ${competitionId === link.id ? 'active' : ''}`}
                   onClick={() => changeFilters(() => setCompetitionId(link.id))}
                 >
-                  {data.competition.name} <span>{data.season.name}</span>
+                  {link.displayName}
                 </button>
               )
             })}
@@ -419,19 +420,19 @@ export function MatchOverviewPage() {
           text="Thử ngày khác hoặc điều chỉnh bộ lọc."
         />
       ) : (
-        groups.map(({ link, items }) => {
-          const data = competitionSeason(link.id)
-          const isCollapsed = collapsed.includes(link.id)
+        groups.map(({ id, items }) => {
+          const data = competitionSeason(id)
+          const isCollapsed = collapsed.includes(id)
           return (
-            <section className="customer-panel match-group" key={link.id}>
+            <section className="customer-panel match-group" key={id}>
               <button
                 className="group-heading"
                 aria-expanded={!isCollapsed}
                 onClick={() =>
                   setCollapsed(
                     isCollapsed
-                      ? collapsed.filter((id) => id !== link.id)
-                      : [...collapsed, link.id],
+                      ? collapsed.filter((value) => value !== id)
+                      : [...collapsed, id],
                   )
                 }
               >
@@ -478,7 +479,7 @@ export function MatchDetailLayout() {
     return (
       <Empty
         title="Không tìm thấy trận đấu"
-        text="Trận đấu này không có trong bộ dữ liệu mẫu."
+        text="Trận đấu này chưa có dữ liệu."
       />
     )
   const match = result.data

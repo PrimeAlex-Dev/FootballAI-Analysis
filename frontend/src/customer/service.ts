@@ -9,14 +9,52 @@ import {
   teams,
 } from './mock'
 import type { Match, Status } from './types'
+import { matchApi } from '../match/api'
+import { competitionSeasonApi } from '../competition-season/api'
+import { query } from '../shared/api'
 
-export const team = (id: number) => teams.find((item) => item.id === id)!
+const realTeams = new Map<number, { name: string; logo: string | null }>()
+const realLinks = new Map<number, string>()
+const realMatches = new Set<number>()
+export const team = (id: number) =>
+  realTeams.get(id) ??
+  teams.find((item) => item.id === id) ?? {
+    name: 'Chưa có dữ liệu',
+    logo: null,
+  }
 export const competitionSeason = (id: number) => {
-  const link = competitionSeasons.find((item) => item.id === id)!
+  const real = realLinks.get(id)
+  if (real) return { competition: { name: real }, season: { name: '' } }
+  const link = competitionSeasons.find((item) => item.id === id)
   return {
-    ...link,
-    competition: competitions.find((item) => item.id === link.competitionId)!,
-    season: seasons.find((item) => item.id === link.seasonId)!,
+    competition: competitions.find(
+      (item) => item.id === link?.competitionId,
+    ) ?? { name: 'Chưa có dữ liệu' },
+    season: seasons.find((item) => item.id === link?.seasonId) ?? { name: '' },
+  }
+}
+function register(match: Match) {
+  realMatches.add(match.id)
+  realTeams.set(match.homeTeamId, {
+    name: match.homeTeamName ?? 'Chưa có dữ liệu',
+    logo: match.homeTeamLogo ?? null,
+  })
+  realTeams.set(match.awayTeamId, {
+    name: match.awayTeamName ?? 'Chưa có dữ liệu',
+    logo: match.awayTeamLogo ?? null,
+  })
+  realLinks.set(
+    match.competitionSeasonId,
+    match.competitionSeasonName ?? 'Chưa có dữ liệu',
+  )
+  return match
+}
+export async function getCompetitionSeasons() {
+  const items: { id: number; displayName: string }[] = []
+  for (let page = 0; ; page++) {
+    const result = await competitionSeasonApi.list(query({ page, size: 100 }))
+    items.push(...result.content)
+    if (page + 1 >= result.page.totalPages) return items
   }
 }
 export const dateKey = (iso: string) =>
@@ -60,35 +98,47 @@ export type MatchFilters = {
   status: Status | null
 }
 export async function getMatches(filters: MatchFilters) {
-  const text = filters.search.trim().toLocaleLowerCase('vi-VN')
-  return matches
-    .filter(
-      (match) =>
-        dateKey(match.kickoffTime) === filters.date &&
-        (!text ||
-          team(match.homeTeamId)
-            .name.toLocaleLowerCase('vi-VN')
-            .includes(text) ||
-          team(match.awayTeamId)
-            .name.toLocaleLowerCase('vi-VN')
-            .includes(text)) &&
-        (!filters.competitionSeasonId ||
-          match.competitionSeasonId === filters.competitionSeasonId) &&
-        (!filters.status || match.status === filters.status),
+  const items: Match[] = []
+  for (let page = 0; ; page++) {
+    const result = await matchApi.list(
+      query({
+        from: `${filters.date}T00:00:00+07:00`,
+        to: `${filters.date}T23:59:59.999+07:00`,
+        name: filters.search.trim(),
+        competitionSeasonId: filters.competitionSeasonId ?? '',
+        status: filters.status ?? '',
+        direction: 'ASC',
+        page,
+        size: 100,
+      }),
     )
-    .sort((a, b) => a.kickoffTime.localeCompare(b.kickoffTime))
+    items.push(...result.content.map(register))
+    if (page + 1 >= result.page.totalPages) return items
+  }
 }
 export async function getMatchById(id: number) {
-  return matches.find((match) => match.id === id) ?? null
+  if (!Number.isSafeInteger(id) || id < 1) return null
+  try {
+    return register(await matchApi.get(id))
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Trận đấu không còn tồn tại.'
+    )
+      return null
+    throw error
+  }
 }
 export async function getMatchPrediction(id: number) {
-  return predictions.find((item) => item.matchId === id) ?? null
+  return realMatches.has(id)
+    ? null
+    : (predictions.find((item) => item.matchId === id) ?? null)
 }
 export async function getMatchStatistics(id: number) {
-  return statistics[id] ?? null
+  return realMatches.has(id) ? null : (statistics[id] ?? null)
 }
 export async function getStandings(id: number) {
-  return standings[id] ?? null
+  return realLinks.has(id) ? null : (standings[id] ?? null)
 }
 export type FormResult = { match: Match; outcome: 'W' | 'D' | 'L' }
 export async function getRecentForm(
@@ -96,6 +146,7 @@ export async function getRecentForm(
   beforeTime: string,
   limit = 10,
 ): Promise<FormResult[]> {
+  if (realTeams.has(teamId)) return []
   return matches
     .filter(
       (match) =>
@@ -118,6 +169,7 @@ export async function getHeadToHead(
   awayId: number,
   beforeTime: string,
 ) {
+  if (realTeams.has(homeId) || realTeams.has(awayId)) return []
   return matches
     .filter(
       (match) =>
