@@ -458,3 +458,34 @@
     flex-basis: 100%;
   }
 }
+.admin-dialog.match-statistics-modal {
+  width: min(860px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
+}
+.match-statistics-dialog {
+  min-width: 0;
+}
+.match-statistics-dialog .admin-field {
+  min-width: 0;
+  max-width: 100%;
+}
+.match-statistics-dialog textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.match-statistics-dialog .table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  max-height: 45vh;
+  overflow: auto;
+}
+.match-statistics-dialog table {
+  min-width: 620px;
+}
+.match-statistics-dialog td,
+.match-statistics-dialog th {
+  padding: 8px 12px;
+}

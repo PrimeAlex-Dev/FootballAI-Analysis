@@ -41,3 +41,4 @@ Tìm kiếm mùa giải dùng tham số name ở backend, giữ từ khóa trong
 Module Đội bóng: /dashboard/teams; CRUD, chi tiết, tìm tên, lọc loại và phân trang server. Contract và kết quả kiểm tra tại [Team API](team-api.md). Logo dùng EntityLogo chung với Competition.
 
 Module Match tại /dashboard/matches: CRUD, tìm tên đội, lọc giải theo mùa/đội/trạng thái/thời gian, sorting và phân trang backend. Contract tại [Match API](match-api.md).
+Match Statistics được tích hợp vào từng dòng Match với trạng thái Đã lưu/Chưa có và dialog import, preview, xem, cập nhật. Contract tại [Match Statistics](match-statistics-api.md).

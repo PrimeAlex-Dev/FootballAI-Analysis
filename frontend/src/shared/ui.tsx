@@ -47,12 +47,14 @@ export function Modal({
   onClose,
   busy = false,
   dirty = false,
+  className = '',
 }: {
   title: string
   children: ReactNode
   onClose: () => void
   busy?: boolean
   dirty?: boolean
+  className?: string
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const [confirm, setConfirm] = useState(false)
@@ -74,7 +76,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      className="admin-dialog"
+      className={`admin-dialog ${className}`.trim()}
       aria-labelledby="dialog-title"
       onCancel={(event) => {
         event.preventDefault()

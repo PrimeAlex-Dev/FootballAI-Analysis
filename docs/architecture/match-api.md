@@ -1,5 +1,7 @@
 # Match — API và giao diện quản trị
 
+MatchResponse có thêm `hasStatistics` tính từ bảng Statistics. Xem [Match Statistics API](match-statistics-api.md).
+
 Trạng thái: triển khai theo thiết kế Match hiện tại; không tự đánh dấu Reference Module được duyệt. Tuân thủ [Coding Standards](../standards/AI_Football_Analysis_Sprint_1_Coding_Standards.md).
 
 ## Phạm vi dữ liệu

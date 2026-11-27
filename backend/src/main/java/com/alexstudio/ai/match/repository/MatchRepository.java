@@ -22,7 +22,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     String PROJECTION = """
             select new com.alexstudio.ai.match.dto.MatchResponse(
                 m.id, m.competitionSeasonId, m.homeTeamId, m.awayTeamId, m.kickoffTime, m.status,
-                m.homeScore, m.awayScore, m.round, concat(c.name, ' ', s.name), h.name, h.logo, a.name, a.logo)
+                m.homeScore, m.awayScore, m.round, concat(c.name, ' ', s.name), h.name, h.logo, a.name, a.logo,
+                exists (select ms.id from MatchStatistics ms where ms.matchId = m.id))
             from Match m, CompetitionSeason cs, Competition c, Season s, Team h, Team a
             where m.competitionSeasonId = cs.id and cs.competition.id = c.id and cs.season.id = s.id
                 and m.homeTeamId = h.id and m.awayTeamId = a.id

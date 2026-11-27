@@ -10,6 +10,7 @@ import {
 } from './api'
 import MatchForm from './MatchForm'
 import MatchCatalogSelect from './MatchCatalogSelect'
+import MatchStatisticsDialog from './MatchStatisticsDialog'
 import EntityLogo from '../shared/EntityLogo'
 import {
   Button,
@@ -23,6 +24,7 @@ import { useList } from '../shared/useList'
 import { useRecordDialogs } from '../shared/useRecordDialogs'
 export default function MatchesPage() {
   const [filterReset, setFilterReset] = useState(0)
+  const [statisticsMatch, setStatisticsMatch] = useState<Match | null>(null)
   const list = useList(matchApi.list)
   const { refresh } = list
   const records = useRecordDialogs(matchApi, list.refresh)
@@ -163,6 +165,7 @@ export default function MatchesPage() {
             'Tỷ số',
             'Đội khách',
             'Trạng thái',
+            'Thống kê',
             'Thời gian (VN)',
             'Thao tác',
           ]}
@@ -208,11 +211,19 @@ export default function MatchesPage() {
                 </span>
               </td>
               <td>
+                <span className="type-badge">
+                  {item.hasStatistics ? 'Đã lưu' : 'Chưa có'}
+                </span>
+              </td>
+              <td>
                 <time dateTime={item.kickoffTime}>
                   {formatVietnamTime(item.kickoffTime)}
                 </time>
               </td>
               <td>
+                <Button secondary onClick={() => setStatisticsMatch(item)}>
+                  Thống kê
+                </Button>
                 <RowActions
                   view={() => records.select('view', item)}
                   edit={() => records.select('edit', item)}
@@ -232,6 +243,13 @@ export default function MatchesPage() {
           go={list.go}
         />
       </section>
+      {statisticsMatch && (
+        <MatchStatisticsDialog
+          match={statisticsMatch}
+          onClose={() => setStatisticsMatch(null)}
+          onSaved={list.refresh}
+        />
+      )}
       {(records.creating || records.selection?.mode === 'edit') && (
         <MatchForm
           value={records.selection?.value}
