@@ -10,6 +10,7 @@ import {
 } from './mock'
 import type { Match, Status } from './types'
 import { matchApi } from '../match/api'
+import type { Page } from '../shared/api'
 import { competitionSeasonApi } from '../competition-season/api'
 import { query } from '../shared/api'
 
@@ -141,12 +142,44 @@ export async function getStandings(id: number) {
   return realLinks.has(id) ? null : (standings[id] ?? null)
 }
 export type FormResult = { match: Match; outcome: 'W' | 'D' | 'L' }
+export type HeadToHeadResult = {
+  homeTeamId: number
+  awayTeamId: number
+  homeWins: number
+  draws: number
+  awayWins: number
+  matches: Page<Match>
+}
+export type RecentFormResult = { home: FormResult[]; away: FormResult[] }
+export async function getMatchRecentForm(
+  matchId: number,
+  homeId: number,
+  awayId: number,
+  beforeTime: string,
+): Promise<RecentFormResult> {
+  if (realMatches.has(matchId)) {
+    const result = await matchApi.recentForm(matchId)
+    return {
+      home: result.home.map(({ match, outcome }) => ({
+        match: register(match),
+        outcome,
+      })),
+      away: result.away.map(({ match, outcome }) => ({
+        match: register(match),
+        outcome,
+      })),
+    }
+  }
+  return {
+    home: await getRecentForm(homeId, beforeTime),
+    away: await getRecentForm(awayId, beforeTime),
+  }
+}
 export async function getRecentForm(
   teamId: number,
   beforeTime: string,
   limit = 10,
 ): Promise<FormResult[]> {
-  if (realTeams.has(teamId)) return []
   return matches
     .filter(
       (match) =>
@@ -165,12 +198,18 @@ export async function getRecentForm(
     })
 }
 export async function getHeadToHead(
+  matchId: number,
   homeId: number,
   awayId: number,
   beforeTime: string,
-) {
-  if (realTeams.has(homeId) || realTeams.has(awayId)) return []
-  return matches
+  page: number,
+): Promise<HeadToHeadResult> {
+  if (realMatches.has(matchId)) {
+    const result = await matchApi.headToHead(matchId, page)
+    result.matches.content.forEach(register)
+    return result
+  }
+  const history = matches
     .filter(
       (match) =>
         match.status === 'FINISHED' &&
@@ -179,4 +218,28 @@ export async function getHeadToHead(
           (match.homeTeamId === awayId && match.awayTeamId === homeId)),
     )
     .sort((a, b) => b.kickoffTime.localeCompare(a.kickoffTime))
+  const homeWins = history.filter((item) =>
+    item.homeTeamId === homeId
+      ? item.homeScore! > item.awayScore!
+      : item.awayScore! > item.homeScore!,
+  ).length
+  const draws = history.filter(
+    (item) => item.homeScore === item.awayScore,
+  ).length
+  return {
+    homeTeamId: homeId,
+    awayTeamId: awayId,
+    homeWins,
+    draws,
+    awayWins: history.length - homeWins - draws,
+    matches: {
+      content: history.slice(page * 5, (page + 1) * 5),
+      page: {
+        size: 5,
+        number: page,
+        totalElements: history.length,
+        totalPages: Math.ceil(history.length / 5),
+      },
+    },
+  }
 }

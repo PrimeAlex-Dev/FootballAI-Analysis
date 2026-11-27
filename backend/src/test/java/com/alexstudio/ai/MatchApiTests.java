@@ -180,6 +180,51 @@ class MatchApiTests {
         assertThat(total("name=not-a-team-" + UUID.randomUUID())).isZero();
     }
     @Test
+    void recentFormAndHeadToHeadUseFinishedHistoryBeforeKickoff() throws Exception {
+        int target = create(body("SCHEDULED", NOW.plusSeconds(600), null, null));
+        int homeWin = create(body("FINISHED", NOW.minusSeconds(60), 2, 1));
+        int draw = create(body("FINISHED", NOW.minusSeconds(120), 0, 0));
+        int awayWin = create(body("FINISHED", NOW.minusSeconds(180), 1, 3).replace(
+                "\"homeTeamId\":" + home + ",\"awayTeamId\":" + away,
+                "\"homeTeamId\":" + away + ",\"awayTeamId\":" + home));
+        create(body("LIVE", NOW.minusSeconds(240), 2, 0));
+        create(body("FINISHED", NOW.plusSeconds(600), 5, 0));
+        String formPath = "/api/matches/" + target + "/recent-form";
+        var form = call("GET", formPath, null);
+        assertThat(form.statusCode()).withFailMessage(form.body()).isEqualTo(200);
+        assertThat(read(form, "$.home.length()")).isEqualTo(3);
+        assertThat(read(form, "$.home[0].match.id")).isEqualTo(homeWin);
+        assertThat(read(form, "$.home[0].outcome")).isEqualTo("W");
+        assertThat(read(form, "$.home[1].outcome")).isEqualTo("D");
+        assertThat(read(form, "$.home[2].outcome")).isEqualTo("W");
+        assertThat(read(form, "$.away[0].outcome")).isEqualTo("L");
+        assertThat(read(form, "$.away[2].outcome")).isEqualTo("L");
+        String h2hPath = "/api/matches/" + target + "/head-to-head?size=2";
+        var first = call("GET", h2hPath, null);
+        assertThat(first.statusCode()).withFailMessage(first.body()).isEqualTo(200);
+        assertThat(read(first, "$.matches.page.totalElements")).isEqualTo(3);
+        assertThat(read(first, "$.homeWins")).isEqualTo(2);
+        assertThat(read(first, "$.draws")).isEqualTo(1);
+        assertThat(read(first, "$.awayWins")).isEqualTo(0);
+        assertThat(read(first, "$.matches.content[0].id")).isEqualTo(homeWin);
+        assertThat(read(first, "$.matches.content[1].id")).isEqualTo(draw);
+        assertThat(read(call("GET", h2hPath + "&page=1", null), "$.matches.content[0].id")).isEqualTo(awayWin);
+        assertThat(call("GET", h2hPath + "&page=-1", null).statusCode()).isEqualTo(400);
+        assertThat(call("GET", "/api/matches/999999999/recent-form", null).statusCode()).isEqualTo(404);
+    }
+    @Test
+    void recentFormKeepsOnlyTenNewestMatches() throws Exception {
+        int target = create(body("SCHEDULED", NOW.plusSeconds(600), null, null));
+        int newest = 0;
+        for (int index = 0; index < 12; index++)
+            newest = create(body("FINISHED", NOW.minusSeconds(60L * (12 - index)), 1, 0));
+        var response = call("GET", "/api/matches/" + target + "/recent-form", null);
+        assertThat(response.statusCode()).withFailMessage(response.body()).isEqualTo(200);
+        assertThat(read(response, "$.home.length()")).isEqualTo(10);
+        assertThat(read(response, "$.away.length()")).isEqualTo(10);
+        assertThat(read(response, "$.home[0].match.id")).isEqualTo(newest);
+    }
+    @Test
     void foreignKeysAndChecksProtectData() throws Exception {
         int match = create(body("FINISHED", NOW, 0, 0));
         assertThat(call("DELETE", "/api/teams/" + home, null).statusCode()).isEqualTo(409);

@@ -1,6 +1,7 @@
 package com.alexstudio.ai.match.repository;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 import com.alexstudio.ai.match.entity.Match;
 import com.alexstudio.ai.match.entity.MatchStatus;
 import com.alexstudio.ai.match.dto.MatchResponse;
@@ -39,4 +40,29 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             """)
     Page<MatchResponse> search(String name, Long competitionSeasonId, Long homeTeamId, Long awayTeamId, Long teamId,
             MatchStatus status, Instant fromTime, Instant toTime, Pageable pageable);
+
+    @Query(PROJECTION + """
+            and m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.kickoffTime < :beforeTime
+            and (m.homeTeamId = :teamId or m.awayTeamId = :teamId)
+            """)
+    List<MatchResponse> recentForm(Long teamId, Instant beforeTime, Pageable pageable);
+
+    String HEAD_TO_HEAD = """
+            m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.kickoffTime < :beforeTime
+            and ((m.homeTeamId = :homeTeamId and m.awayTeamId = :awayTeamId)
+                or (m.homeTeamId = :awayTeamId and m.awayTeamId = :homeTeamId))
+            """;
+
+    @Query(value = PROJECTION + " and " + HEAD_TO_HEAD, countQuery = "select count(m) from Match m where "
+            + HEAD_TO_HEAD)
+    Page<MatchResponse> headToHead(Long homeTeamId, Long awayTeamId, Instant beforeTime, Pageable pageable);
+
+    @Query("select count(m) from Match m where " + HEAD_TO_HEAD
+            + " and ((m.homeTeamId = :homeTeamId and m.homeScore > m.awayScore) or (m.awayTeamId = :homeTeamId and m.awayScore > m.homeScore))")
+    long countHomeWins(Long homeTeamId, Long awayTeamId, Instant beforeTime);
+
+    @Query("select count(m) from Match m where " + HEAD_TO_HEAD + " and m.homeScore = m.awayScore")
+    long countDraws(Long homeTeamId, Long awayTeamId, Instant beforeTime);
 }

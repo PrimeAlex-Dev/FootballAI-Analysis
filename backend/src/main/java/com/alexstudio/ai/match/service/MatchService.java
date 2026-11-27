@@ -2,6 +2,7 @@ package com.alexstudio.ai.match.service;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.List;
 import com.alexstudio.ai.common.exception.BusinessException;
 import com.alexstudio.ai.competitionseason.service.CompetitionSeasonService;
 import com.alexstudio.ai.team.service.TeamService;
@@ -12,6 +13,7 @@ import com.alexstudio.ai.match.repository.MatchRepository;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.data.web.PagedModel;
 import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MatchService {
@@ -68,6 +70,38 @@ public class MatchService {
                         "\\_") + "%";
         return matches.search(search, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from, to,
                 PageRequest.of(page, size, Sort.by(direction, "kickoffTime", "id")));
+    }
+
+    @Transactional(readOnly = true)
+    public RecentFormResponse recentForm(Long id) {
+        Match match = matches.findById(id).orElseThrow(() -> missing());
+        List<FormMatchResponse> home = formFor(match.getHomeTeamId(), match.getKickoffTime());
+        List<FormMatchResponse> away = formFor(match.getAwayTeamId(), match.getKickoffTime());
+        return new RecentFormResponse(match.getHomeTeamId(), match.getAwayTeamId(), home, away);
+    }
+
+    private List<FormMatchResponse> formFor(Long teamId, Instant beforeTime) {
+        return matches.recentForm(teamId, beforeTime,
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "kickoffTime", "id"))).stream().map(item -> {
+                    int own = item.homeTeamId().equals(teamId) ? item.homeScore() : item.awayScore();
+                    int other = item.homeTeamId().equals(teamId) ? item.awayScore() : item.homeScore();
+                    String outcome = own > other ? "W" : own < other ? "L" : "D";
+                    return new FormMatchResponse(item, outcome);
+                }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public HeadToHeadResponse headToHead(Long id, int page, int size) {
+        Match match = matches.findById(id).orElseThrow(() -> missing());
+        Long homeId = match.getHomeTeamId();
+        Long awayId = match.getAwayTeamId();
+        Instant beforeTime = match.getKickoffTime();
+        Page<MatchResponse> history = matches.headToHead(homeId, awayId, beforeTime,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "kickoffTime", "id")));
+        long homeWins = matches.countHomeWins(homeId, awayId, beforeTime);
+        long draws = matches.countDraws(homeId, awayId, beforeTime);
+        return new HeadToHeadResponse(homeId, awayId, homeWins, draws, history.getTotalElements() - homeWins - draws,
+                new PagedModel<>(history));
     }
     @Transactional
     public int promoteDue() {

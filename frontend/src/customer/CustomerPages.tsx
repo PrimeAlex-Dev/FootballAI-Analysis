@@ -32,7 +32,7 @@ import {
   getMatchPrediction,
   getMatches,
   getMatchStatistics,
-  getRecentForm,
+  getMatchRecentForm,
   getStandings,
   score,
   statusLabel,
@@ -619,149 +619,402 @@ function HistoryList({ items }: { items: FormResult[] }) {
   return (
     <div className="history-list">
       {items.map(({ match, outcome }) => (
-        <Link to={`/matches/${match.id}/ai`} key={match.id}>
+        <div className="history-row" key={match.id}>
           <span className={`outcome ${outcome.toLowerCase()}`}>{outcome}</span>
           <span>{dateLabel(match.kickoffTime)}</span>
           <span>
             {team(match.homeTeamId).name} · {team(match.awayTeamId).name}
           </span>
           <strong>{score(match)}</strong>
-        </Link>
+        </div>
       ))}
+    </div>
+  )
+}
+function FormChartRow({
+  teamId,
+  items,
+}: {
+  teamId: number
+  items: FormResult[]
+}) {
+  const wins = items.filter((item) => item.outcome === 'W').length
+  const draws = items.filter((item) => item.outcome === 'D').length
+  const losses = items.length - wins - draws
+  const percentage = (count: number) => Math.round((count / items.length) * 100)
+  return (
+    <div className="form-chart-team-column">
+      <h3>{team(teamId).name}</h3>
+      {items.length ? (
+        <>
+          <div
+            className="form-chart-bar"
+            role="img"
+            aria-label={`${team(teamId).name}: ${wins} thắng, ${draws} hòa, ${losses} thua trong ${items.length} trận`}
+          >
+            {[
+              { key: 'w', count: wins },
+              { key: 'd', count: draws },
+              { key: 'l', count: losses },
+            ]
+              .filter((part) => part.count > 0)
+              .map((part) => (
+                <span
+                  key={part.key}
+                  className={part.key}
+                  style={{ width: `${(part.count / items.length) * 100}%` }}
+                />
+              ))}
+          </div>
+          <div
+            className="form-chart-results"
+            aria-label={`Phong độ ${team(teamId).name}, từ trận cũ đến trận mới`}
+          >
+            {[...items].reverse().map(({ match, outcome }) => (
+              <span
+                key={match.id}
+                className={`form-chart-result ${outcome.toLowerCase()}`}
+                title={`${dateLabel(match.kickoffTime)}: ${outcome === 'W' ? 'Thắng' : outcome === 'D' ? 'Hòa' : 'Thua'}`}
+              >
+                {outcome}
+              </span>
+            ))}
+          </div>
+          <p className="form-chart-summary">
+            {wins} thắng ({percentage(wins)}%) · {draws} hòa (
+            {percentage(draws)}%) · {losses} thua ({percentage(losses)}%)
+          </p>
+        </>
+      ) : (
+        <p className="muted">Chưa có trận đã kết thúc.</p>
+      )}
     </div>
   )
 }
 export function FormPage() {
   const match = useMatch()
-  const home = useAsync(
-    () => getRecentForm(match.homeTeamId, match.kickoffTime),
-    [match.id],
-  )
-  const away = useAsync(
-    () => getRecentForm(match.awayTeamId, match.kickoffTime),
+  const [section, setSection] = useState<'form' | 'h2h' | 'chart'>('form')
+  const form = useAsync(
+    () =>
+      getMatchRecentForm(
+        match.id,
+        match.homeTeamId,
+        match.awayTeamId,
+        match.kickoffTime,
+      ),
     [match.id],
   )
   const h2h = useAsync(
-    () => getHeadToHead(match.homeTeamId, match.awayTeamId, match.kickoffTime),
+    () =>
+      getHeadToHead(
+        match.id,
+        match.homeTeamId,
+        match.awayTeamId,
+        match.kickoffTime,
+        0,
+      ),
     [match.id],
   )
-  const [pageState, setPageState] = useState({ matchId: match.id, shown: 5 })
-  const shown = pageState.matchId === match.id ? pageState.shown : 5
+  const [pageState, setPageState] = useState<{
+    matchId: number
+    items: Match[]
+    page: number
+    loading: boolean
+    error: boolean
+  }>({ matchId: match.id, items: [], page: 0, loading: false, error: false })
+  const extra = pageState.matchId === match.id ? pageState.items : []
+  const history = [...(h2h.data?.matches.content ?? []), ...extra]
+  async function loadMore() {
+    if (!h2h.data || pageState.loading) return
+    const nextPage = pageState.matchId === match.id ? pageState.page + 1 : 1
+    setPageState({
+      matchId: match.id,
+      items: extra,
+      page: nextPage - 1,
+      loading: true,
+      error: false,
+    })
+    try {
+      const result = await getHeadToHead(
+        match.id,
+        match.homeTeamId,
+        match.awayTeamId,
+        match.kickoffTime,
+        nextPage,
+      )
+      setPageState({
+        matchId: match.id,
+        items: [...extra, ...result.matches.content],
+        page: nextPage,
+        loading: false,
+        error: false,
+      })
+    } catch {
+      setPageState({
+        matchId: match.id,
+        items: extra,
+        page: nextPage - 1,
+        loading: false,
+        error: true,
+      })
+    }
+  }
   return (
     <>
-      <div className="detail-grid">
+      <div
+        className="form-section-tabs"
+        role="tablist"
+        aria-label="Phong độ và đối đầu"
+      >
         {[
-          { id: match.homeTeamId, data: home.data },
-          { id: match.awayTeamId, data: away.data },
-        ].map(({ id, data }) => (
-          <section className="customer-panel content-card" key={id}>
-            <div className="card-title">
-              <TeamMark id={id} />
-              <div>
-                <span className="eyebrow">PHONG ĐỘ GẦN ĐÂY</span>
-                <h2>{team(id).name}</h2>
+          { id: 'form', label: 'Phong độ' },
+          { id: 'h2h', label: 'Đối đầu' },
+          { id: 'chart', label: 'Biểu đồ' },
+        ].map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={section === item.id}
+            className={section === item.id ? 'active' : ''}
+            onClick={() => setSection(item.id as 'form' | 'h2h' | 'chart')}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      {section === 'form' && (
+        <div className="detail-grid">
+          {[
+            { id: match.homeTeamId, data: form.data?.home },
+            { id: match.awayTeamId, data: form.data?.away },
+          ].map(({ id, data }) => (
+            <section className="customer-panel content-card" key={id}>
+              <div className="card-title">
+                <TeamMark id={id} />
+                <div>
+                  <span className="eyebrow">PHONG ĐỘ GẦN ĐÂY</span>
+                  <h2>{team(id).name}</h2>
+                </div>
               </div>
-            </div>
-            {data?.length ? (
-              <>
-                <div className="form-pills">
-                  {data.map(({ match: item, outcome }) => (
-                    <span
-                      className={`outcome ${outcome.toLowerCase()}`}
-                      key={item.id}
-                    >
-                      {outcome}
+              {data?.length ? (
+                <>
+                  <div className="form-pills">
+                    {data.map(({ match: item, outcome }) => (
+                      <span
+                        className={`outcome ${outcome.toLowerCase()}`}
+                        key={item.id}
+                      >
+                        {outcome}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="muted">
+                    {data.filter((item) => item.outcome === 'W').length} thắng ·{' '}
+                    {data.filter((item) => item.outcome === 'D').length} hòa ·{' '}
+                    {data.filter((item) => item.outcome === 'L').length} thua
+                  </p>
+                  <HistoryList items={data} />
+                </>
+              ) : form.error ? (
+                <Empty
+                  title="Không tải được phong độ"
+                  text="Vui lòng thử tải lại trang."
+                />
+              ) : form.loading ? (
+                <p className="muted">Đang tải phong độ...</p>
+              ) : (
+                <Empty
+                  title="Chưa có phong độ"
+                  text="Không có trận đã kết thúc trước thời điểm này."
+                />
+              )}
+            </section>
+          ))}
+        </div>
+      )}
+      {section === 'h2h' && (
+        <section className="customer-panel content-card h2h">
+          <span className="eyebrow">LỊCH SỬ CHẠM TRÁN</span>
+          <h2>Đối đầu trực tiếp</h2>
+          {history.length ? (
+            <>
+              <div className="h2h-summary">
+                <span>{h2h.data?.matches.page.totalElements} trận</span>
+                <span>
+                  {team(match.homeTeamId).name}: {h2h.data?.homeWins} thắng
+                </span>
+                <span>Hòa: {h2h.data?.draws}</span>
+                <span>
+                  {team(match.awayTeamId).name}: {h2h.data?.awayWins} thắng
+                </span>
+              </div>
+              <div className="history-list">
+                {history.map((item) => (
+                  <div className="history-row" key={item.id}>
+                    <span>{dateLabel(item.kickoffTime)}</span>
+                    <span>
+                      {
+                        competitionSeason(item.competitionSeasonId).competition
+                          .name
+                      }
                     </span>
+                    <span>
+                      {team(item.homeTeamId).name} ·{' '}
+                      {team(item.awayTeamId).name}
+                    </span>
+                    <strong>{score(item)}</strong>
+                  </div>
+                ))}
+              </div>
+              {history.length < (h2h.data?.matches.page.totalElements ?? 0) && (
+                <button
+                  className="load-more"
+                  onClick={loadMore}
+                  disabled={pageState.loading}
+                >
+                  {pageState.loading ? 'Đang tải...' : 'Xem thêm đối đầu'}{' '}
+                  <ArrowRight size={16} />
+                </button>
+              )}
+              {pageState.error && (
+                <p className="muted">
+                  Không tải được thêm trận. Vui lòng thử lại.
+                </p>
+              )}
+            </>
+          ) : h2h.error ? (
+            <Empty
+              title="Không tải được đối đầu"
+              text="Vui lòng thử tải lại trang."
+            />
+          ) : h2h.loading ? (
+            <p className="muted">Đang tải đối đầu...</p>
+          ) : (
+            <Empty
+              title="Chưa có dữ liệu đối đầu"
+              text="Chưa có dữ liệu đối đầu giữa hai đội."
+            />
+          )}
+        </section>
+      )}
+      {section === 'chart' && (
+        <div className="form-charts">
+          <section className="customer-panel content-card">
+            <span className="eyebrow">RECENT FORM</span>
+            <h2>Phong độ gần đây</h2>
+            <p className="muted">
+              Tối đa 10 trận đã kết thúc gần nhất · Từ trái sang phải: trận cũ
+              đến trận mới.
+            </p>
+            {form.data ? (
+              <div className="form-chart-scroll">
+                <div className="form-chart-rows">
+                  <FormChartRow
+                    teamId={match.homeTeamId}
+                    items={form.data.home}
+                  />
+                  <FormChartRow
+                    teamId={match.awayTeamId}
+                    items={form.data.away}
+                  />
+                </div>
+              </div>
+            ) : form.error ? (
+              <Empty
+                title="Không tải được phong độ"
+                text="Vui lòng thử tải lại trang."
+              />
+            ) : (
+              <p className="muted">Đang tải phong độ...</p>
+            )}
+            <div className="form-chart-legend" aria-label="Chú giải phong độ">
+              <span>
+                <i className="w" /> Thắng
+              </span>
+              <span>
+                <i className="d" /> Hòa
+              </span>
+              <span>
+                <i className="l" /> Thua
+              </span>
+            </div>
+          </section>
+          <section className="customer-panel content-card">
+            <span className="eyebrow">LỊCH SỬ ĐỐI ĐẦU</span>
+            <h2>Tỷ lệ thắng và hòa</h2>
+            {h2h.data && h2h.data.matches.page.totalElements > 0 ? (
+              <>
+                <p className="muted">
+                  Tính trên {h2h.data.matches.page.totalElements} trận đối đầu
+                  đã kết thúc.
+                </p>
+                <div
+                  className="h2h-chart-bar"
+                  role="img"
+                  aria-label={`${team(match.homeTeamId).name} thắng ${h2h.data.homeWins} trận, hòa ${h2h.data.draws} trận, ${team(match.awayTeamId).name} thắng ${h2h.data.awayWins} trận`}
+                >
+                  {[
+                    { key: 'home', count: h2h.data.homeWins },
+                    { key: 'draw', count: h2h.data.draws },
+                    { key: 'away', count: h2h.data.awayWins },
+                  ]
+                    .filter((part) => part.count > 0)
+                    .map((part) => (
+                      <span
+                        key={part.key}
+                        className={part.key}
+                        style={{
+                          width: `${(part.count / h2h.data!.matches.page.totalElements) * 100}%`,
+                        }}
+                      />
+                    ))}
+                </div>
+                <div className="h2h-chart-legend">
+                  {[
+                    {
+                      key: 'home',
+                      label: `${team(match.homeTeamId).name} thắng`,
+                      count: h2h.data.homeWins,
+                    },
+                    { key: 'draw', label: 'Hòa', count: h2h.data.draws },
+                    {
+                      key: 'away',
+                      label: `${team(match.awayTeamId).name} thắng`,
+                      count: h2h.data.awayWins,
+                    },
+                  ].map((part) => (
+                    <div key={part.key}>
+                      <span className={`h2h-chart-dot ${part.key}`} />
+                      <span>{part.label}</span>
+                      <strong>
+                        {part.count} trận ·{' '}
+                        {Math.round(
+                          (part.count / h2h.data!.matches.page.totalElements) *
+                            100,
+                        )}
+                        %
+                      </strong>
+                    </div>
                   ))}
                 </div>
-                <p className="muted">
-                  {data.filter((item) => item.outcome === 'W').length} thắng ·{' '}
-                  {data.filter((item) => item.outcome === 'D').length} hòa ·{' '}
-                  {data.filter((item) => item.outcome === 'L').length} thua
-                </p>
-                <HistoryList items={data} />
               </>
+            ) : h2h.error ? (
+              <Empty
+                title="Không tải được đối đầu"
+                text="Vui lòng thử tải lại trang."
+              />
+            ) : h2h.loading ? (
+              <p className="muted">Đang tải đối đầu...</p>
             ) : (
               <Empty
-                title="Chưa có phong độ"
-                text="Không có trận đã kết thúc trước thời điểm này."
+                title="Chưa có dữ liệu đối đầu"
+                text="Hai đội chưa có trận đối đầu đã kết thúc trước trận này."
               />
             )}
           </section>
-        ))}
-      </div>
-      <section className="customer-panel content-card h2h">
-        <span className="eyebrow">LỊCH SỬ CHẠM TRÁN</span>
-        <h2>Đối đầu trực tiếp</h2>
-        {h2h.data?.length ? (
-          <>
-            <div className="h2h-summary">
-              <span>{h2h.data.length} trận</span>
-              <span>
-                {team(match.homeTeamId).name}:{' '}
-                {
-                  h2h.data.filter((item) =>
-                    item.homeTeamId === match.homeTeamId
-                      ? item.homeScore! > item.awayScore!
-                      : item.awayScore! > item.homeScore!,
-                  ).length
-                }{' '}
-                thắng
-              </span>
-              <span>
-                Hòa:{' '}
-                {
-                  h2h.data.filter((item) => item.homeScore === item.awayScore)
-                    .length
-                }
-              </span>
-              <span>
-                {team(match.awayTeamId).name}:{' '}
-                {
-                  h2h.data.filter((item) =>
-                    item.homeTeamId === match.awayTeamId
-                      ? item.homeScore! > item.awayScore!
-                      : item.awayScore! > item.homeScore!,
-                  ).length
-                }{' '}
-                thắng
-              </span>
-            </div>
-            <div className="history-list">
-              {h2h.data.slice(0, shown).map((item) => (
-                <Link key={item.id} to={`/matches/${item.id}/ai`}>
-                  <span>{dateLabel(item.kickoffTime)}</span>
-                  <span>
-                    {
-                      competitionSeason(item.competitionSeasonId).competition
-                        .name
-                    }
-                  </span>
-                  <span>
-                    {team(item.homeTeamId).name} · {team(item.awayTeamId).name}
-                  </span>
-                  <strong>{score(item)}</strong>
-                </Link>
-              ))}
-            </div>
-            {shown < h2h.data.length && (
-              <button
-                className="load-more"
-                onClick={() =>
-                  setPageState({ matchId: match.id, shown: shown + 5 })
-                }
-              >
-                Xem thêm đối đầu <ArrowRight size={16} />
-              </button>
-            )}
-          </>
-        ) : (
-          <Empty
-            title="Chưa có dữ liệu đối đầu"
-            text="Chưa có dữ liệu đối đầu giữa hai đội."
-          />
-        )}
-      </section>
+        </div>
+      )}
     </>
   )
 }
