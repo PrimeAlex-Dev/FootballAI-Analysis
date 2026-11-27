@@ -79,6 +79,8 @@ Index: competitionSeason + kickoff + id; homeTeam + status + kickoff + id; awayT
 
 ## Frontend
 
+DataInitializer tạo dữ liệu mẫu cho tab Phong độ & Đối đầu khi backend khởi chạy: Serie A các mùa 2023/2024–2026/2027, Inter, Fiorentina, AC Milan, Napoli; trận Inter – Fiorentina lúc 23:30 ngày 27/11/2026 (giờ Việt Nam) và các trận FINISHED trước đó. Trận mẫu được kiểm tra theo CompetitionSeason, hai đội và kickoffTime trước khi thêm; khởi chạy lại không tạo trùng hoặc cập nhật trận đã tồn tại. Chọn ngày 27/11/2026 trên Customer UI rồi mở trận Inter – Fiorentina để xem Recent Form và H2H.
+
 `/dashboard/matches`, có trong sidebar và trang tổng quan. Dùng layout, button, field, dialog, bảng, phân trang, EntityLogo và xử lý lỗi hiện có. Tìm tên đội, lọc giải theo mùa/đội/trạng thái/khoảng giờ Việt Nam, sorting và phân trang qua backend; điều kiện giữ trong URL. Danh sách tải lại mỗi 15 giây khi tab hiển thị, không tự suy luận LIVE bằng đồng hồ trình duyệt.
 
 Bộ chọn CompetitionSeason tải trang 50 bản ghi và tải thêm; bộ chọn Team hỗ trợ tìm tên qua API, tải thêm và giữ nhãn đội đang chọn. Không lọc trên một trang thay cho backend.

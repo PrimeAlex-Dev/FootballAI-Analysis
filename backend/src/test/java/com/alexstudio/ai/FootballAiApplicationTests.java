@@ -5,8 +5,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
 
 import com.jayway.jsonpath.JsonPath;
+import com.alexstudio.ai.common.config.DataInitializer;
+import com.alexstudio.ai.match.repository.MatchRepository;
+import com.alexstudio.ai.match.service.MatchService;
 import jakarta.persistence.EntityManagerFactory;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
@@ -23,11 +27,18 @@ class FootballAiApplicationTests {
 
     private final EntityManagerFactory entityManagerFactory;
     private final Flyway flyway;
+    private final DataInitializer dataInitializer;
+    private final MatchRepository matchRepository;
+    private final MatchService matchService;
 
     @Autowired
-    FootballAiApplicationTests(EntityManagerFactory entityManagerFactory, Flyway flyway) {
+    FootballAiApplicationTests(EntityManagerFactory entityManagerFactory, Flyway flyway,
+            DataInitializer dataInitializer, MatchRepository matchRepository, MatchService matchService) {
         this.entityManagerFactory = entityManagerFactory;
         this.flyway = flyway;
+        this.dataInitializer = dataInitializer;
+        this.matchRepository = matchRepository;
+        this.matchService = matchService;
     }
 
     @LocalServerPort
@@ -90,5 +101,23 @@ class FootballAiApplicationTests {
             assertThat(ui.statusCode()).isEqualTo(200);
             assertThat(ui.body()).contains("swagger-ui");
         }
+    }
+
+    @Test
+    void sampleMatchHasFormAndHeadToHeadWithoutDuplicateSeeds() {
+        long count = matchRepository.count();
+        dataInitializer.run();
+        assertThat(matchRepository.count()).isEqualTo(count);
+
+        Instant kickoff = Instant.parse("2026-11-27T16:30:00Z");
+        var sample = matchRepository.findAll().stream().filter(match -> match.getKickoffTime().equals(kickoff))
+                .filter(match -> match.getHomeScore() == null && match.getAwayScore() == null).findFirst()
+                .orElseThrow();
+        var form = matchService.recentForm(sample.getId());
+        var headToHead = matchService.headToHead(sample.getId(), 0, 5);
+        assertThat(form.home()).hasSize(8);
+        assertThat(form.away()).hasSize(8);
+        assertThat(headToHead.matches().getMetadata().totalElements()).isEqualTo(6);
+        assertThat(headToHead.matches().getContent()).hasSize(5);
     }
 }

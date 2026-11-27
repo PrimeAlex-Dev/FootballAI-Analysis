@@ -1,6 +1,7 @@
 package com.alexstudio.ai.competitionseason.repository;
 
 import com.alexstudio.ai.competitionseason.entity.CompetitionSeason;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -14,6 +15,7 @@ public interface CompetitionSeasonRepository
     boolean existsByCompetition_Id(Long competitionId);
     boolean existsBySeason_Id(Long seasonId);
     boolean existsByCompetition_IdAndSeason_Id(Long competitionId, Long seasonId);
+    Optional<CompetitionSeason> findByCompetition_IdAndSeason_Id(Long competitionId, Long seasonId);
 
     @Override
     @EntityGraph(attributePaths = {"competition", "season"})
