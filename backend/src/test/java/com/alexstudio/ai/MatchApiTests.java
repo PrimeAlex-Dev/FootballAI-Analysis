@@ -106,6 +106,7 @@ class MatchApiTests {
         int past = create(body("SCHEDULED", NOW.minusSeconds(1), 7, 8));
         assertThat(read(get(past), "$.status")).isEqualTo("LIVE");
         assertThat(read(get(past), "$.homeScore")).isNull();
+        service.promoteDue();
         assertThat(service.promoteDue()).isZero();
         when(clock.instant()).thenReturn(NOW.plusSeconds(1));
         job.run();

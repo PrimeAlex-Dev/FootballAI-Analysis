@@ -680,10 +680,20 @@ function FormChartRow({
               </span>
             ))}
           </div>
-          <p className="form-chart-summary">
-            {wins} thắng ({percentage(wins)}%) · {draws} hòa (
-            {percentage(draws)}%) · {losses} thua ({percentage(losses)}%)
-          </p>
+          <div className="form-chart-summary">
+            <span>
+              <strong>{wins} thắng</strong> ·{' '}
+              <strong>{percentage(wins)}%</strong>
+            </span>
+            <span>
+              <strong>{draws} hòa</strong> ·{' '}
+              <strong>{percentage(draws)}%</strong>
+            </span>
+            <span>
+              <strong>{losses} thua</strong> ·{' '}
+              <strong>{percentage(losses)}%</strong>
+            </span>
+          </div>
         </>
       ) : (
         <p className="muted">Chưa có trận đã kết thúc.</p>
@@ -809,10 +819,25 @@ export function FormPage() {
                       </span>
                     ))}
                   </div>
-                  <p className="muted">
-                    {data.filter((item) => item.outcome === 'W').length} thắng ·{' '}
-                    {data.filter((item) => item.outcome === 'D').length} hòa ·{' '}
-                    {data.filter((item) => item.outcome === 'L').length} thua
+                  <p className="form-result-summary">
+                    <span>
+                      <strong>
+                        {data.filter((item) => item.outcome === 'W').length}
+                      </strong>{' '}
+                      thắng
+                    </span>
+                    <span>
+                      <strong>
+                        {data.filter((item) => item.outcome === 'D').length}
+                      </strong>{' '}
+                      hòa
+                    </span>
+                    <span>
+                      <strong>
+                        {data.filter((item) => item.outcome === 'L').length}
+                      </strong>{' '}
+                      thua
+                    </span>
                   </p>
                   <HistoryList items={data} />
                 </>

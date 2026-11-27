@@ -9,6 +9,8 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 public interface MatchRepository extends JpaRepository<Match, Long> {
+    boolean existsByCompetitionSeasonIdAndHomeTeamIdAndAwayTeamIdAndKickoffTime(Long competitionSeasonId,
+            Long homeTeamId, Long awayTeamId, Instant kickoffTime);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from Match m where m.id = :id")
     Optional<Match> findForUpdate(Long id);
