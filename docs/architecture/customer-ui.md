@@ -8,4 +8,4 @@ Dữ liệu tại `frontend/src/customer/mock.ts` là minh họa, không phải 
 
 Danh sách trận có lọc ngày, đội, CompetitionSeason và trạng thái; các điều kiện kết hợp, tìm tên đội có debounce 280ms, tải thêm theo lô bốn trận. Chi tiết giữ header khi chuyển tab. Phong độ/H2H chỉ dùng trận FINISHED trước kickoff của trận đang xem, tính W/D/L theo đội và H2H có tải thêm. Tỷ số thiếu hiển thị `- : -`; thống kê và bảng điểm thiếu có empty state. Giờ hiển thị theo `Asia/Ho_Chi_Minh`.
 
-Chưa gọi API, chưa có AI thật, Match/Standing backend hoặc xác thực khách hàng trong Customer UI.
+Danh sách và đầu trang chi tiết gọi `/api/matches`, dùng DTO tên/logo đội, tên giải theo mùa, tỷ số và giờ Việt Nam từ backend. Bộ lọc giải theo mùa lấy `/api/competition-seasons`; tìm tên đội, lọc ngày/trạng thái/giải dùng tham số Match API. Các tab phân tích vẫn dùng dữ liệu mẫu; với trận thực không có dữ liệu tương ứng thì hiển thị trạng thái chưa có dữ liệu. Chưa có AI thật, Standing backend hoặc xác thực khách hàng.
