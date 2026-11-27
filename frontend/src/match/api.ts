@@ -18,6 +18,7 @@ export interface Match extends MatchInput {
   homeTeamLogo: string | null
   awayTeamName: string
   awayTeamLogo: string | null
+  hasStatistics: boolean
 }
 export type FormMatch = { match: Match; outcome: 'W' | 'D' | 'L' }
 export type RecentForm = {
