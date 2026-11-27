@@ -25,6 +25,16 @@ public class MatchController {
     public MatchResponse get(@PathVariable @Min(1) Long id) {
         return service.get(id);
     }
+    @GetMapping("/{id}/recent-form")
+    public RecentFormResponse recentForm(@PathVariable @Min(1) Long id) {
+        return service.recentForm(id);
+    }
+    @GetMapping("/{id}/head-to-head")
+    public HeadToHeadResponse headToHead(@PathVariable @Min(1) Long id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "5") @Min(1) @Max(100) int size) {
+        return service.headToHead(id, page, size);
+    }
     @PutMapping("/{id}")
     public MatchResponse update(@PathVariable @Min(1) Long id, @Valid @RequestBody MatchRequest request) {
         return service.update(id, request);

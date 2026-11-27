@@ -19,6 +19,10 @@ Dùng tiền tố `/api` theo convention hiện tại, không thêm `/api/v1` ri
 | GET | `/api/matches` | 200 content + page |
 | PUT | `/api/matches/{id}` | 200 MatchResponse |
 | DELETE | `/api/matches/{id}` | 204 |
+| GET | `/api/matches/{id}/recent-form` | Phong độ 10 trận gần nhất của hai đội |
+| GET | `/api/matches/{id}/head-to-head?page=0&size=5` | Lịch sử đối đầu theo trang và tổng thắng/hòa |
+
+Hai API lịch sử lấy đội và mốc thời gian từ Match `{id}`. Chỉ tính trận `FINISHED` với `kickoffTime` nhỏ hơn kickoff trận đang xem, trên mọi giải đấu và cả hai vị trí sân. Sắp xếp `kickoffTime DESC, id DESC`. `recent-form` trả `homeTeamId`, `awayTeamId`, hai mảng `home`/`away` (tối đa 10 mục mỗi mảng); mỗi mục gồm `match` theo MatchResponse hiện có và `outcome` W/D/L từ góc nhìn đội tương ứng. `head-to-head` trả hai ID đội, `homeWins`, `draws`, `awayWins` của toàn bộ lịch sử phù hợp và `matches` gồm `content`/`page` theo quy ước phân trang. `page` từ 0, `size` từ 1 đến 100, mặc định 5. ID không tồn tại trả 404; tham số sai trả 400. Không lưu bảng phong độ hoặc H2H riêng.
 
 Request tạo/sửa:
 
@@ -71,7 +75,7 @@ Create/update xử lý trận SCHEDULED đã đến giờ ngay trong transaction
 
 V5 tạo matches với PK, FK RESTRICT, CHECK hai đội khác nhau, status hợp lệ, score không âm/đủ cặp và phù hợp status. Không sửa V1–V4.
 
-Index: competitionSeason + kickoff + id; homeTeam + status + kickoff + id; awayTeam + status + kickoff + id; kickoff + id; index riêng SCHEDULED theo kickoff cho job. Các index theo hai đội hỗ trợ truy vấn lịch sử FINISHED theo sân nhà/khách và thời gian; chưa triển khai endpoint Recent Form/H2H.
+Index: competitionSeason + kickoff + id; homeTeam + status + kickoff + id; awayTeam + status + kickoff + id; kickoff + id; index riêng SCHEDULED theo kickoff cho job. Các index theo hai đội hỗ trợ truy vấn lịch sử FINISHED theo sân nhà/khách và thời gian. Chức năng Recent Form/H2H dùng schema và index hiện có, không thêm migration.
 
 ## Frontend
 

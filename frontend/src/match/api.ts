@@ -19,10 +19,28 @@ export interface Match extends MatchInput {
   awayTeamName: string
   awayTeamLogo: string | null
 }
+export type FormMatch = { match: Match; outcome: 'W' | 'D' | 'L' }
+export type RecentForm = {
+  homeTeamId: number
+  awayTeamId: number
+  home: FormMatch[]
+  away: FormMatch[]
+}
+export type HeadToHead = {
+  homeTeamId: number
+  awayTeamId: number
+  homeWins: number
+  draws: number
+  awayWins: number
+  matches: Page<Match>
+}
 export const matchApi = {
   list: (params: string, signal?: AbortSignal) =>
     request<Page<Match>>(`/matches?${params}`, { signal }),
   get: (id: number) => request<Match>(`/matches/${id}`),
+  recentForm: (id: number) => request<RecentForm>(`/matches/${id}/recent-form`),
+  headToHead: (id: number, page: number) =>
+    request<HeadToHead>(`/matches/${id}/head-to-head?page=${page}&size=5`),
   create: (input: MatchInput) =>
     request<Match>('/matches', { method: 'POST', body: JSON.stringify(input) }),
   update: (id: number, input: MatchInput) =>
