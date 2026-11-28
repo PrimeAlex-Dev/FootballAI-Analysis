@@ -49,6 +49,33 @@ export type Statistic = {
   away: number
   unit?: string
 }
+export type RadarMetric = {
+  name: string
+  average: number | null
+  availableMatches: number
+  unit: string
+}
+export type RadarAxis = {
+  key: string
+  label: string
+  score: number | null
+  primary: RadarMetric
+  supporting: RadarMetric[]
+  referenceProfiles: number
+}
+export type RadarTeam = {
+  teamId: number
+  teamName: string
+  historyMatches: number
+  axes: RadarAxis[]
+}
+export type PlayingStyleRadar = {
+  status: 'READY' | 'PARTIAL' | 'INSUFFICIENT_REFERENCE_DATA' | 'NOT_APPLICABLE'
+  sampleLimit: number
+  referenceMethod: string
+  home: RadarTeam
+  away: RadarTeam
+}
 export type Standing = {
   teamId: number
   rank?: number

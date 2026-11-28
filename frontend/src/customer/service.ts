@@ -7,12 +7,12 @@ import {
   statistics,
   teams,
 } from './mock'
-import type { Match, Status } from './types'
+import type { Match, PlayingStyleRadar, Status } from './types'
 import { publicMatchApi } from '../match/api'
 import type { Page } from '../shared/api'
 import { competitionSeasonApi } from '../competition-season/api'
 import { publicStandingApi } from '../standing/api'
-import { query } from '../shared/api'
+import { query, request } from '../shared/api'
 
 const realTeams = new Map<number, { name: string; logo: string | null }>()
 const realLinks = new Map<number, string>()
@@ -137,6 +137,9 @@ export async function getMatchPrediction(id: number) {
 }
 export async function getMatchStatistics(id: number) {
   return realMatches.has(id) ? null : (statistics[id] ?? null)
+}
+export function getPlayingStyleRadar(id: number) {
+  return request<PlayingStyleRadar>(`/public/matches/${id}/playing-style-radar`)
 }
 export async function getStandings(id: number) {
   try {

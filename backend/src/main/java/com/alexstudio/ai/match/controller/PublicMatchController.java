@@ -3,6 +3,7 @@ import java.time.Instant;
 import com.alexstudio.ai.match.dto.*;
 import com.alexstudio.ai.match.entity.MatchStatus;
 import com.alexstudio.ai.match.service.MatchService;
+import com.alexstudio.ai.match.service.PlayingStyleRadarService;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedModel;
@@ -11,12 +12,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/public/matches")
 public class PublicMatchController {
     private final MatchService service;
-    public PublicMatchController(MatchService service) {
+    private final PlayingStyleRadarService radar;
+    public PublicMatchController(MatchService service, PlayingStyleRadarService radar) {
         this.service = service;
+        this.radar = radar;
     }
     @GetMapping("/{id}")
     public MatchResponse get(@PathVariable @Min(1) Long id) {
         return service.getPublic(id);
+    }
+    @GetMapping("/{id}/playing-style-radar")
+    public PlayingStyleRadarResponse playingStyleRadar(@PathVariable @Min(1) Long id) {
+        return radar.get(id);
     }
     @GetMapping("/{id}/recent-form")
     public RecentFormResponse recentForm(@PathVariable @Min(1) Long id) {
