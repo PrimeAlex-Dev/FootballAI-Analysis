@@ -7,12 +7,13 @@ import {
   statistics,
   teams,
 } from './mock'
-import type { Match, PlayingStyleRadar, Status } from './types'
-import { publicMatchApi } from '../match/api'
+import type { Match, PlayingStyleRadar, Prediction, Status } from './types'
+import type { MatchAnalysis } from '../match/api'
+import { matchAnalysisApi, publicMatchApi } from '../match/api'
 import type { Page } from '../shared/api'
 import { competitionSeasonApi } from '../competition-season/api'
 import { publicStandingApi } from '../standing/api'
-import { query, request } from '../shared/api'
+import { errorMessage, query, request } from '../shared/api'
 
 const realTeams = new Map<number, { name: string; logo: string | null }>()
 const realLinks = new Map<number, string>()
@@ -130,10 +131,17 @@ export async function getMatchById(id: number) {
     throw error
   }
 }
-export async function getMatchPrediction(id: number) {
-  return realMatches.has(id)
-    ? null
-    : (predictions.find((item) => item.matchId === id) ?? null)
+export async function getMatchPrediction(
+  id: number,
+): Promise<Prediction | MatchAnalysis | null> {
+  if (!realMatches.has(id))
+    return predictions.find((item) => item.matchId === id) ?? null
+  try {
+    return await matchAnalysisApi.getPublic(id)
+  } catch (error) {
+    if (errorMessage(error) === 'Trận đấu chưa có nhận định.') return null
+    throw error
+  }
 }
 export async function getMatchStatistics(id: number) {
   return realMatches.has(id) ? null : (statistics[id] ?? null)
