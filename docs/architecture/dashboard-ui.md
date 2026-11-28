@@ -1,5 +1,7 @@
 # Dashboard quản trị dữ liệu
 
+Trang quản trị Match có thao tác Export Prompt trên từng trận; nội dung và Copy Prompt hiển thị trong dialog. Xem [Match Analysis Prompt API](match-analysis-prompt-api.md).
+
 Trạng thái: frontend tích hợp API hiện có, chưa tự đánh dấu Reference Module chính thức.
 
 ## Đường dẫn

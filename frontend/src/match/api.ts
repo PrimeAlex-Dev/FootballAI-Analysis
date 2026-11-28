@@ -36,10 +36,22 @@ export type HeadToHead = {
   awayWins: number
   matches: Page<Match>
 }
+export type MatchAnalysisPrompt = {
+  prompt: string
+  homeRecentCount: number
+  awayRecentCount: number
+  homeMatchesWithStatistics: number
+  awayMatchesWithStatistics: number
+}
 export const matchApi = {
   list: (params: string, signal?: AbortSignal) =>
     request<Page<Match>>(`/matches?${params}`, { signal }),
   get: (id: number) => request<Match>(`/matches/${id}`),
+  exportPrompt: (id: number, signal?: AbortSignal) =>
+    request<MatchAnalysisPrompt>(`/matches/${id}/analysis-prompt`, {
+      signal,
+      cache: 'no-store',
+    }),
   recentForm: (id: number) => request<RecentForm>(`/matches/${id}/recent-form`),
   headToHead: (id: number, page: number) =>
     request<HeadToHead>(`/matches/${id}/head-to-head?page=${page}&size=5`),

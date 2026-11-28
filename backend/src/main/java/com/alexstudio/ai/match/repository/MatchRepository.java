@@ -55,6 +55,21 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             """)
     List<MatchResponse> recentForm(Long teamId, Instant beforeTime, Pageable pageable);
 
+    @Query(PROJECTION + """
+            and m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.kickoffTime < :beforeTime
+            and (m.homeTeamId = :teamId or m.awayTeamId = :teamId)
+            """)
+    List<MatchResponse> recentForPrompt(Long teamId, Instant beforeTime, Pageable pageable);
+
+    @Query(PROJECTION + """
+            and m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.kickoffTime < :beforeTime
+            and ((m.homeTeamId = :homeTeamId and m.awayTeamId = :awayTeamId)
+                or (m.homeTeamId = :awayTeamId and m.awayTeamId = :homeTeamId))
+            """)
+    List<MatchResponse> headToHeadForPrompt(Long homeTeamId, Long awayTeamId, Instant beforeTime, Pageable pageable);
+
     String HEAD_TO_HEAD = """
             m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
             and m.hidden = false
