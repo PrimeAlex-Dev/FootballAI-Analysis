@@ -21,6 +21,12 @@ const entries = [
     icon: CalendarClock,
   },
   {
+    path: '/dashboard/standings',
+    label: 'Bảng xếp hạng',
+    description: 'Import và quản lý bảng xếp hạng theo giải và mùa.',
+    icon: Trophy,
+  },
+  {
     path: '/dashboard/teams',
     label: 'Đội bóng',
     description: 'Quản lý câu lạc bộ và đội tuyển quốc gia.',

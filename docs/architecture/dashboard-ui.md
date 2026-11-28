@@ -42,3 +42,4 @@ Module Đội bóng: /dashboard/teams; CRUD, chi tiết, tìm tên, lọc loại
 
 Module Match tại /dashboard/matches: CRUD, tìm tên đội, lọc giải theo mùa/đội/trạng thái/thời gian, sorting và phân trang backend. Contract tại [Match API](match-api.md).
 Match Statistics được tích hợp vào từng dòng Match với trạng thái Đã lưu/Chưa có và dialog import, preview, xem, cập nhật. Contract tại [Match Statistics](match-statistics-api.md).
+Standing tại `/dashboard/standings` hỗ trợ import JSON, preview, đối chiếu Team, xem, thay thế và xóa theo CompetitionSeason. Contract tại [Standing API](standing-api.md).

@@ -7,6 +7,10 @@ import com.alexstudio.ai.team.entity.Team;
 import com.alexstudio.ai.team.entity.TeamType;
 import com.alexstudio.ai.team.repository.TeamRepository;
 import com.alexstudio.ai.team.mapper.TeamMapper;
+import java.util.Optional;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +47,17 @@ public class TeamService {
     @Transactional(readOnly = true)
     public TeamResponse get(Long id) {
         return TeamMapper.toResponse(find(id));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TeamResponse> findByExactName(String name) {
+        return teams.findByNameIgnoreCase(name.trim()).map(TeamMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, TeamResponse> getByIds(Collection<Long> ids) {
+        return teams.findAllById(ids).stream().map(TeamMapper::toResponse)
+                .collect(Collectors.toMap(TeamResponse::id, value -> value));
     }
 
     @Transactional(readOnly = true)

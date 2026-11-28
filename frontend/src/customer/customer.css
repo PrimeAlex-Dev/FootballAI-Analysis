@@ -1095,45 +1095,86 @@
 .stat-bars span:last-child {
   background: var(--away);
 }
+.standing-card {
+  --standing-highlight: #293d25;
+  --standing-highlight-border: #709b4d;
+}
+.customer[data-theme='light'] .standing-card {
+  --standing-highlight: #edf7e6;
+  --standing-highlight-border: #70a844;
+}
+.standing-card h2 {
+  margin-bottom: 22px;
+}
+.standing-card h3 {
+  color: var(--text);
+  font-size: 16px;
+  margin: 24px 0 12px;
+}
 .standing-scroll {
+  max-width: 100%;
   overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 .standing-table {
   width: 100%;
-  border-collapse: collapse;
-  min-width: 710px;
+  min-width: 780px;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  font-size: 15px;
 }
 .standing-table th {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 650;
-  padding: 13px;
+  color: var(--text);
+  background: var(--raised);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 15px 12px;
+}
+.standing-table th:nth-child(2) {
+  text-align: left;
 }
 .standing-table td {
-  padding: 13px;
+  padding: 15px 12px;
   border-top: 1px solid var(--border);
+  line-height: 1.4;
 }
 .standing-table td:nth-child(2) {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   text-align: left;
   font-weight: 650;
+  min-width: 190px;
 }
-.standing-table td:nth-child(2) .team-mark {
-  width: 26px;
-  height: 26px;
+.standing-team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
-.standing-table tr.highlight {
-  background: var(--primary);
-  color: var(--primary-text);
+.standing-team-cell .team-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  font-size: 11px;
+}
+.standing-table td:last-child {
+  font-weight: 800;
+}
+.standing-table tbody tr:hover td {
+  background: var(--hover);
+}
+.standing-table tr.highlight td,
+.standing-table tbody tr.highlight:hover td {
+  background: var(--standing-highlight);
+}
+.standing-table tr.highlight td:first-child {
+  box-shadow: inset 3px 0 var(--standing-highlight-border);
+  font-weight: 800;
 }
 .standing-table tr.highlight .team-mark {
-  background: #15290b;
-  color: var(--primary);
-  border: 0;
+  background: var(--raised);
+  color: var(--text);
+  border: 1px solid var(--standing-highlight-border);
 }
 @media (max-width: 900px) {
   .header-note {
