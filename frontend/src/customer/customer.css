@@ -1037,6 +1037,43 @@
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
+.analysis-speech-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.analysis-speech-controls button,
+.analysis-speech-controls select {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--raised);
+  color: var(--text);
+}
+.analysis-speech-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.analysis-speech-controls button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.analysis-speech-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+}
+.analysis-speech-status {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
 .prediction-highlight {
   padding: 18px 20px;
   border-left: 3px solid var(--primary);
