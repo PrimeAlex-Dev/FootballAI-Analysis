@@ -4,7 +4,6 @@ import {
   matches,
   predictions,
   seasons,
-  standings,
   statistics,
   teams,
 } from './mock'
@@ -12,6 +11,7 @@ import type { Match, Status } from './types'
 import { matchApi } from '../match/api'
 import type { Page } from '../shared/api'
 import { competitionSeasonApi } from '../competition-season/api'
+import { standingApi } from '../standing/api'
 import { query } from '../shared/api'
 
 const realTeams = new Map<number, { name: string; logo: string | null }>()
@@ -139,7 +139,34 @@ export async function getMatchStatistics(id: number) {
   return realMatches.has(id) ? null : (statistics[id] ?? null)
 }
 export async function getStandings(id: number) {
-  return realLinks.has(id) ? null : (standings[id] ?? null)
+  try {
+    const standing = await standingApi.getByCompetitionSeason(id)
+    return standing.tables.map((table) =>
+      table.map((row) => {
+        if (row.teamId !== null)
+          realTeams.set(row.teamId, {
+            name: row.teamName || row.sourceTeam,
+            logo: row.teamLogo,
+          })
+        return {
+          teamId: row.teamId ?? 0,
+          rank: row.rank,
+          played: row.matchesPlayed,
+          won: row.wins,
+          drawn: row.draws,
+          lost: row.losses,
+          goalsFor: row.goalsFor,
+          goalsAgainst: row.goalsAgainst,
+          goalDifference: row.goalDifference,
+          points: row.points,
+        }
+      }),
+    )
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Chưa có bảng xếp hạng.')
+      return null
+    throw error
+  }
 }
 export type FormResult = { match: Match; outcome: 'W' | 'D' | 'L' }
 export type HeadToHeadResult = {

@@ -51,11 +51,13 @@ export type Statistic = {
 }
 export type Standing = {
   teamId: number
+  rank?: number
   played: number
   won: number
   drawn: number
   lost: number
   goalsFor: number
   goalsAgainst: number
+  goalDifference?: number
   points: number
 }

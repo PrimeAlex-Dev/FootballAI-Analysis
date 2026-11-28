@@ -11,6 +11,10 @@ const messages: Record<string, string> = {
   'Match status is required when updating':
     'Phải chọn trạng thái khi cập nhật trận đấu.',
   'Match not found': 'Trận đấu không còn tồn tại.',
+  'Standing not found': 'Chưa có bảng xếp hạng.',
+  'Standing already exists': 'Giải đấu theo mùa đã có bảng xếp hạng.',
+  'Invalid standing data':
+    'JSON bảng xếp hạng hoặc đối chiếu Team không hợp lệ.',
   'Match statistics not found': 'Trận đấu chưa có thống kê.',
   'Match statistics already exists':
     'Trận đấu đã có thống kê. Vui lòng cập nhật.',

@@ -65,7 +65,18 @@ public class DataInitializer implements CommandLineRunner {
                 }
             }
         }
+        seedStandingTeams();
         seedMatches();
+    }
+
+    private void seedStandingTeams() {
+        for (String name : List.of("Arsenal", "Brighton", "Manchester City", "Liverpool", "Bournemouth", "Brentford",
+                "Leeds", "Chelsea", "Everton", "Tottenham", "Hull", "Aston Villa", "Newcastle", "Nottingham",
+                "Coventry", "Fulham", "Ipswich", "Sunderland", "Manchester Utd", "Crystal Palace")) {
+            if (!teamRepository.existsByNameIgnoreCase(name)) {
+                teamRepository.save(new Team(name, TeamType.CLUB, null));
+            }
+        }
     }
 
     private void seedMatches() {

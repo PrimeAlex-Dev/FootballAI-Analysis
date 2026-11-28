@@ -1099,78 +1099,112 @@ export function StatisticsPage() {
 }
 export function StandingsPage() {
   const match = useMatch()
+  const [retry, setRetry] = useState(0)
   const result = useAsync(
     () => getStandings(match.competitionSeasonId),
-    [match.competitionSeasonId],
+    [match.competitionSeasonId, retry],
   )
+  if (result.loading)
+    return (
+      <div
+        className="customer-panel skeleton"
+        aria-label="Đang tải bảng xếp hạng"
+      />
+    )
+  if (result.error)
+    return (
+      <div>
+        <Empty
+          title="Không tải được bảng xếp hạng"
+          text="Vui lòng thử lại sau."
+        />
+        <button
+          className="load-more"
+          onClick={() => setRetry((value) => value + 1)}
+        >
+          Thử lại
+        </button>
+      </div>
+    )
   if (!result.data)
     return (
       <Empty
         title="Chưa có bảng xếp hạng"
-        text="Giải đấu theo mùa này hiện chưa có bảng điểm mẫu."
+        text="Giải đấu theo mùa này chưa có dữ liệu bảng xếp hạng."
       />
     )
+  const tables = result.data
   return (
-    <section className="customer-panel content-card">
+    <section className="customer-panel content-card standing-card">
       <span className="eyebrow">
         {competitionSeason(match.competitionSeasonId).competition.name} ·{' '}
         {competitionSeason(match.competitionSeasonId).season.name}
       </span>
       <h2>Bảng xếp hạng</h2>
-      <div className="standing-scroll">
-        <table className="standing-table">
-          <thead>
-            <tr>
-              {[
-                '#',
-                'Đội bóng',
-                'Tr',
-                'T',
-                'H',
-                'B',
-                'BT',
-                'BB',
-                'HS',
-                'Điểm',
-              ].map((label) => (
-                <th key={label}>{label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {result.data.map((row: Standing, index) => (
-              <tr
-                key={row.teamId}
-                className={
-                  row.teamId === match.homeTeamId ||
-                  row.teamId === match.awayTeamId
-                    ? 'highlight'
-                    : ''
-                }
-              >
-                <td>{index + 1}</td>
-                <td>
-                  <TeamMark id={row.teamId} />
-                  {team(row.teamId).name}
-                </td>
-                <td>{row.played}</td>
-                <td>{row.won}</td>
-                <td>{row.drawn}</td>
-                <td>{row.lost}</td>
-                <td>{row.goalsFor}</td>
-                <td>{row.goalsAgainst}</td>
-                <td>
-                  {row.goalsFor - row.goalsAgainst > 0 ? '+' : ''}
-                  {row.goalsFor - row.goalsAgainst}
-                </td>
-                <td>
-                  <strong>{row.points}</strong>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {tables.map((table, tableIndex) => (
+        <div key={tableIndex}>
+          {tables.length > 1 && <h3>Bảng {tableIndex + 1}</h3>}
+          <div className="standing-scroll">
+            <table className="standing-table">
+              <thead>
+                <tr>
+                  {[
+                    '#',
+                    'Đội bóng',
+                    'Tr',
+                    'T',
+                    'H',
+                    'B',
+                    'BT',
+                    'BB',
+                    'HS',
+                    'Điểm',
+                  ].map((label) => (
+                    <th key={label}>{label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((row: Standing, index) => (
+                  <tr
+                    key={row.teamId}
+                    className={
+                      row.teamId === match.homeTeamId ||
+                      row.teamId === match.awayTeamId
+                        ? 'highlight'
+                        : ''
+                    }
+                  >
+                    <td>{row.rank ?? index + 1}</td>
+                    <td>
+                      <span className="standing-team-cell">
+                        <TeamMark id={row.teamId} />
+                        <span>{team(row.teamId).name}</span>
+                      </span>
+                    </td>
+                    <td>{row.played}</td>
+                    <td>{row.won}</td>
+                    <td>{row.drawn}</td>
+                    <td>{row.lost}</td>
+                    <td>{row.goalsFor}</td>
+                    <td>{row.goalsAgainst}</td>
+                    <td>
+                      {(row.goalDifference ?? row.goalsFor - row.goalsAgainst) >
+                      0
+                        ? '+'
+                        : ''}
+                      {row.goalDifference ?? row.goalsFor - row.goalsAgainst}
+                    </td>
+                    <td>
+                      <strong>{row.points}</strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
     </section>
   )
 }
