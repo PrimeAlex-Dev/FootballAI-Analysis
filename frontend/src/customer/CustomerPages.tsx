@@ -8,10 +8,14 @@ import {
   ChevronRight,
   CircleDot,
   Moon,
+  Pause,
+  Play,
   Search,
   Sparkles,
+  Square,
   Sun,
   Trophy,
+  Volume2,
   X,
 } from 'lucide-react'
 import {
@@ -41,6 +45,7 @@ import {
 } from './service'
 import type { FormResult, MatchFilters } from './service'
 import type { Match, Prediction, Standing, Statistic, Status } from './types'
+import { useAnalysisSpeech, type SpeechRate } from './useAnalysisSpeech'
 import './customer.css'
 
 const PlayingStyleRadarView = lazy(() => import('./PlayingStyleRadar'))
@@ -571,32 +576,11 @@ export function AiPage() {
     )
   if ('analysisContent' in result.data)
     return (
-      <div className="detail-grid ai-grid">
-        <section className="customer-panel content-card ai-text-card">
-          <span className="eyebrow">
-            <Sparkles size={16} /> NHẬN ĐỊNH TRẬN ĐẤU
-          </span>
-          <h2>Nhận định AI</h2>
-          <p
-            className="analysis-text"
-            tabIndex={0}
-            aria-label="Nội dung nhận định AI"
-          >
-            {result.data.analysisContent}
-          </p>
-        </section>
-        <section className="customer-panel content-card ai-text-card">
-          <span className="eyebrow">DỰ ĐOÁN TRẬN ĐẤU</span>
-          <h2>Dự đoán AI</h2>
-          <p
-            className="analysis-text prediction-highlight"
-            tabIndex={0}
-            aria-label="Nội dung dự đoán AI"
-          >
-            {result.data.predictionContent}
-          </p>
-        </section>
-      </div>
+      <PublishedAnalysis
+        key={match.id}
+        analysis={result.data.analysisContent}
+        prediction={result.data.predictionContent}
+      />
     )
   const prediction: Prediction = result.data
   const values = [
@@ -649,6 +633,103 @@ export function AiPage() {
             </li>
           ))}
         </ul>
+      </section>
+    </div>
+  )
+}
+
+function PublishedAnalysis({
+  analysis,
+  prediction,
+}: {
+  analysis: string
+  prediction: string
+}) {
+  const speech = useAnalysisSpeech(analysis)
+  const available = speech.supported && !!speech.voice
+  const message = !speech.supported
+    ? 'Trình duyệt này không hỗ trợ đọc văn bản.'
+    : speech.voiceLoading
+      ? 'Đang kiểm tra giọng đọc tiếng Việt…'
+      : !speech.voice
+        ? 'Thiết bị hoặc trình duyệt hiện chưa có giọng đọc tiếng Việt.'
+        : speech.error
+
+  return (
+    <div className="detail-grid ai-grid">
+      <section className="customer-panel content-card ai-text-card">
+        <span className="eyebrow">
+          <Sparkles size={16} /> NHẬN ĐỊNH TRẬN ĐẤU
+        </span>
+        <h2>Nhận định AI</h2>
+        <div
+          className="analysis-speech-controls"
+          aria-label="Điều khiển đọc nhận định"
+        >
+          {speech.status === 'playing' ? (
+            <button type="button" onClick={speech.pause}>
+              <Pause size={16} /> Tạm dừng
+            </button>
+          ) : speech.status === 'paused' ? (
+            <button type="button" onClick={speech.resume}>
+              <Play size={16} /> Tiếp tục
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={speech.play}
+              disabled={!available || !analysis.trim()}
+            >
+              <Volume2 size={16} /> Đọc phân tích
+            </button>
+          )}
+          {(speech.status === 'playing' || speech.status === 'paused') && (
+            <button type="button" onClick={speech.stop}>
+              <Square size={15} /> Dừng
+            </button>
+          )}
+          <label>
+            Tốc độ
+            <select
+              value={speech.rate}
+              onChange={(event) =>
+                speech.changeRate(Number(event.target.value) as SpeechRate)
+              }
+            >
+              <option value={1}>1×</option>
+              <option value={1.25}>1.25×</option>
+              <option value={1.5}>1.5×</option>
+            </select>
+          </label>
+        </div>
+        <p className="analysis-speech-status" role="status" aria-live="polite">
+          {message ||
+            {
+              idle: 'Sẵn sàng đọc',
+              playing: 'Đang đọc',
+              paused: 'Đã tạm dừng',
+              stopped: 'Đã dừng',
+              finished: 'Đã đọc xong',
+            }[speech.status]}
+        </p>
+        <p
+          className="analysis-text"
+          tabIndex={0}
+          aria-label="Nội dung nhận định AI"
+        >
+          {analysis}
+        </p>
+      </section>
+      <section className="customer-panel content-card ai-text-card">
+        <span className="eyebrow">DỰ ĐOÁN TRẬN ĐẤU</span>
+        <h2>Dự đoán AI</h2>
+        <p
+          className="analysis-text prediction-highlight"
+          tabIndex={0}
+          aria-label="Nội dung dự đoán AI"
+        >
+          {prediction}
+        </p>
       </section>
     </div>
   )

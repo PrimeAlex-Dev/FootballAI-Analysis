@@ -2,6 +2,8 @@
 
 Tab Nhận định AI của trận thật gọi [Match Analysis API](match-analysis-api.md), chỉ hiển thị bản `PUBLISHED` dưới dạng văn bản thuần giữ xuống dòng. Bản nháp hoặc chưa có nhận định hiển thị trạng thái thiếu dữ liệu.
 
+Customer có thể bấm “Đọc phân tích” để nghe `analysisContent` bằng Web Speech API của trình duyệt, với giọng tiếng Việt khi thiết bị cung cấp. Có phát, tạm dừng, tiếp tục, dừng và tốc độ 1×/1.25×/1.5×. Giọng đọc dừng khi rời tab AI hoặc đổi trận; tính năng không tự phát và không tạo file âm thanh.
+
 Tab Thống kê của trận sắp diễn ra dùng [Playing Style Radar V1](playing-style-radar-api.md) từ API thật. Trận trạng thái khác giữ giao diện thống kê hiện có. Radar chỉ vẽ khi cả hai đội có đủ sáu điểm; thiếu mẫu hiển thị chỉ số gốc, không gán 0.
 
 Customer đọc Match và Standing qua `/api/public/matches` và `/api/public/competition-seasons/{id}/standing`. Match ẩn không xuất hiện trong danh sách, chi tiết, Recent Form hoặc H2H; Standing ẩn hiển thị “Chưa có dữ liệu”. API quản trị `/api/matches` và `/api/standings` vẫn đọc được dữ liệu ẩn.
