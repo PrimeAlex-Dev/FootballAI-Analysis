@@ -418,7 +418,30 @@
   min-width: 160px;
 }
 .admin .match-management td:nth-child(6) {
-  min-width: 130px;
+  min-width: 0;
+}
+.match-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--text);
+}
+.match-icon-positive {
+  color: #398900;
+  border-color: #71bd26;
+  background: var(--accent-soft);
+}
+.match-icon-muted {
+  color: var(--muted);
+}
+.match-row-actions {
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 /* Keep native selects and search controls inside their Match grid columns. */
 .match-catalog-select {

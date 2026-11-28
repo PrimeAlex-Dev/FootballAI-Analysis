@@ -25,6 +25,7 @@ export type Standing = StandingPreview & {
   id: number
   createdAt: string
   updatedAt: string
+  hidden: boolean
 }
 export type StandingSummary = {
   id: number
@@ -33,6 +34,7 @@ export type StandingSummary = {
   tableCount: number
   teamCount: number
   updatedAt: string
+  hidden: boolean
 }
 export type TeamMapping = {
   tableIndex: number
@@ -63,4 +65,13 @@ export const standingApi = {
     }),
   remove: (id: number) =>
     request<void>(`/competition-seasons/${id}/standing`, { method: 'DELETE' }),
+  visibility: (id: number, hidden: boolean) =>
+    request<Standing>(`/standings/${id}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ hidden }),
+    }),
+}
+export const publicStandingApi = {
+  getByCompetitionSeason: (id: number) =>
+    request<Standing>(`/public/competition-seasons/${id}/standing`),
 }

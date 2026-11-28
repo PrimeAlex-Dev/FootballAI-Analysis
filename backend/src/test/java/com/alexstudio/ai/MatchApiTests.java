@@ -214,6 +214,47 @@ class MatchApiTests {
         assertThat(call("GET", "/api/matches/999999999/recent-form", null).statusCode()).isEqualTo(404);
     }
     @Test
+    void hiddenMatchDisappearsFromPublicPagesAndAllLaterHistory() throws Exception {
+        int third = id(call("POST", "/api/teams", "{\"name\":\"" + prefix + " Third\",\"type\":\"CLUB\"}"));
+        try {
+            int historical = create(body("FINISHED", NOW.minusSeconds(3 * 86400), 2, 1));
+            int laterSamePair = create(body("SCHEDULED", NOW.minusSeconds(2 * 86400), null, null));
+            int laterDifferentPair = create(body("SCHEDULED", NOW.minusSeconds(86400), null, null)
+                    .replace("\"awayTeamId\":" + away, "\"awayTeamId\":" + third));
+            assertThat(read(call("GET", "/api/public/matches/" + laterSamePair + "/head-to-head", null),
+                    "$.matches.page.totalElements")).isEqualTo(1);
+            assertThat(read(call("GET", "/api/public/matches/" + laterDifferentPair + "/recent-form", null),
+                    "$.home.length()")).isEqualTo(1);
+            var hidden = call("PATCH", "/api/matches/" + historical + "/visibility", "{\"hidden\":true}");
+            assertThat(hidden.statusCode()).withFailMessage(hidden.body()).isEqualTo(200);
+            assertThat(read(hidden, "$.hidden")).isEqualTo(true);
+            assertThat(call("GET", "/api/public/matches/" + historical, null).statusCode()).isEqualTo(404);
+            assertThat(
+                    read(call("GET", "/api/public/matches?competitionSeasonId=" + link, null), "$.page.totalElements"))
+                    .isEqualTo(2);
+            assertThat(read(call("GET", "/api/matches?competitionSeasonId=" + link + "&hidden=true", null),
+                    "$.page.totalElements")).isEqualTo(1);
+            assertThat(read(call("GET", "/api/public/matches/" + laterSamePair + "/head-to-head", null),
+                    "$.matches.page.totalElements")).isEqualTo(0);
+            assertThat(read(call("GET", "/api/public/matches/" + laterDifferentPair + "/recent-form", null),
+                    "$.home.length()")).isEqualTo(0);
+            assertThat(call("GET", "/api/public/matches/" + historical + "/recent-form", null).statusCode())
+                    .isEqualTo(404);
+            assertThat(call("PUT", "/api/matches/" + historical, body("FINISHED", NOW.minusSeconds(3 * 86400), 3, 1))
+                    .statusCode()).isEqualTo(200);
+            assertThat(read(get(historical), "$.hidden")).isEqualTo(true);
+            assertThat(call("PATCH", "/api/matches/" + historical + "/visibility", "{}").statusCode()).isEqualTo(400);
+            assertThat(call("PATCH", "/api/matches/" + historical + "/visibility", "{\"hidden\":false}").statusCode())
+                    .isEqualTo(200);
+            assertThat(call("GET", "/api/public/matches/" + historical, null).statusCode()).isEqualTo(200);
+        } finally {
+            for (int value : matches)
+                call("DELETE", "/api/matches/" + value, null);
+            matches.clear();
+            call("DELETE", "/api/teams/" + third, null);
+        }
+    }
+    @Test
     void recentFormKeepsOnlyTenNewestMatches() throws Exception {
         int target = create(body("SCHEDULED", NOW.plusSeconds(600), null, null));
         int newest = 0;

@@ -352,6 +352,11 @@ function StandingDialog({
 export default function StandingsPage() {
   const list = useList(standingApi.list)
   const [mode, setMode] = useState<Mode | null>(null)
+  const [visibilityItem, setVisibilityItem] = useState<StandingSummary | null>(
+    null,
+  )
+  const [visibilityBusy, setVisibilityBusy] = useState(false)
+  const [visibilityError, setVisibilityError] = useState('')
   const [notice, setNotice] = useState('')
   const saved = () => {
     setMode(null)
@@ -379,9 +384,20 @@ export default function StandingsPage() {
             value={list.params.get('competitionSeasonId') || ''}
             onChange={(id) => list.change({ competitionSeasonId: id })}
           />
+          <label className="admin-field">
+            <span>Hiển thị Customer</span>
+            <select
+              value={list.params.get('hidden') || ''}
+              onChange={(event) => list.change({ hidden: event.target.value })}
+            >
+              <option value="">Tất cả</option>
+              <option value="false">Đang hiển thị</option>
+              <option value="true">Đã ẩn</option>
+            </select>
+          </label>
           <Button
             secondary
-            onClick={() => list.change({ competitionSeasonId: '' })}
+            onClick={() => list.change({ competitionSeasonId: '', hidden: '' })}
           >
             Đặt lại
           </Button>
@@ -392,6 +408,7 @@ export default function StandingsPage() {
             'Số bảng',
             'Số đội',
             'Cập nhật (VN)',
+            'Hiển thị',
             'Thao tác',
           ]}
           loading={list.loading}
@@ -408,7 +425,21 @@ export default function StandingsPage() {
               <td>{item.teamCount}</td>
               <td>{formatVietnamTime(item.updatedAt)}</td>
               <td>
+                <span className="type-badge">
+                  {item.hidden ? 'Đã ẩn' : 'Đang hiển thị'}
+                </span>
+              </td>
+              <td>
                 <div className="row-actions">
+                  <Button
+                    secondary
+                    onClick={() => {
+                      setVisibilityItem(item)
+                      setVisibilityError('')
+                    }}
+                  >
+                    {item.hidden ? 'Hiện' : 'Ẩn'}
+                  </Button>
                   <Button
                     secondary
                     onClick={() => setMode({ kind: 'view', item })}
@@ -448,6 +479,56 @@ export default function StandingsPage() {
           onClose={() => setMode(null)}
           onSaved={saved}
         />
+      )}
+      {visibilityItem && (
+        <Modal
+          title={visibilityItem.hidden ? 'Hiện Standing' : 'Ẩn Standing'}
+          onClose={() => setVisibilityItem(null)}
+          busy={visibilityBusy}
+        >
+          <div className="dialog-body">
+            <p>
+              {visibilityItem.hidden
+                ? 'Bảng xếp hạng sẽ hiển thị lại trên Customer UI.'
+                : 'Customer UI sẽ hiện “Chưa có dữ liệu”. Bảng xếp hạng vẫn được lưu.'}
+            </p>
+            <ErrorNotice message={visibilityError} />
+            <div className="dialog-actions">
+              <Button
+                secondary
+                disabled={visibilityBusy}
+                onClick={() => setVisibilityItem(null)}
+              >
+                Hủy
+              </Button>
+              <Button
+                disabled={visibilityBusy}
+                onClick={async () => {
+                  setVisibilityBusy(true)
+                  try {
+                    await standingApi.visibility(
+                      visibilityItem.id,
+                      !visibilityItem.hidden,
+                    )
+                    setNotice(
+                      visibilityItem.hidden
+                        ? 'Đã hiện Standing.'
+                        : 'Đã ẩn Standing.',
+                    )
+                    setVisibilityItem(null)
+                    list.refresh()
+                  } catch (error) {
+                    setVisibilityError(errorMessage(error))
+                  } finally {
+                    setVisibilityBusy(false)
+                  }
+                }}
+              >
+                Xác nhận
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
       {mode?.kind === 'delete' && (
         <DeleteDialog

@@ -19,6 +19,7 @@ export interface Match extends MatchInput {
   awayTeamName: string
   awayTeamLogo: string | null
   hasStatistics: boolean
+  hidden: boolean
 }
 export type FormMatch = { match: Match; outcome: 'W' | 'D' | 'L' }
 export type RecentForm = {
@@ -50,6 +51,21 @@ export const matchApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: number) => request<void>(`/matches/${id}`, { method: 'DELETE' }),
+  visibility: (id: number, hidden: boolean) =>
+    request<Match>(`/matches/${id}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ hidden }),
+    }),
+}
+export const publicMatchApi = {
+  list: (params: string) => request<Page<Match>>(`/public/matches?${params}`),
+  get: (id: number) => request<Match>(`/public/matches/${id}`),
+  recentForm: (id: number) =>
+    request<RecentForm>(`/public/matches/${id}/recent-form`),
+  headToHead: (id: number, page: number) =>
+    request<HeadToHead>(
+      `/public/matches/${id}/head-to-head?page=${page}&size=5`,
+    ),
 }
 export const statusLabels: Record<MatchStatus, string> = {
   SCHEDULED: 'Chưa diễn ra',

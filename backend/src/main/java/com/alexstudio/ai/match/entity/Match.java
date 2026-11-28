@@ -22,6 +22,8 @@ public class Match {
     private Integer awayScore;
     @Column(columnDefinition = "text")
     private String round;
+    @Column(name = "is_hidden", nullable = false)
+    private boolean hidden;
     protected Match() {
     }
     public Match(Long competitionSeasonId, Long homeTeamId, Long awayTeamId, Instant kickoffTime, MatchStatus status,
@@ -65,5 +67,11 @@ public class Match {
     }
     public String getRound() {
         return round;
+    }
+    public boolean isHidden() {
+        return hidden;
+    }
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 }

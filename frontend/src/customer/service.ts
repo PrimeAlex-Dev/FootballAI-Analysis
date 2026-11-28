@@ -8,10 +8,10 @@ import {
   teams,
 } from './mock'
 import type { Match, Status } from './types'
-import { matchApi } from '../match/api'
+import { publicMatchApi } from '../match/api'
 import type { Page } from '../shared/api'
 import { competitionSeasonApi } from '../competition-season/api'
-import { standingApi } from '../standing/api'
+import { publicStandingApi } from '../standing/api'
 import { query } from '../shared/api'
 
 const realTeams = new Map<number, { name: string; logo: string | null }>()
@@ -101,7 +101,7 @@ export type MatchFilters = {
 export async function getMatches(filters: MatchFilters) {
   const items: Match[] = []
   for (let page = 0; ; page++) {
-    const result = await matchApi.list(
+    const result = await publicMatchApi.list(
       query({
         from: `${filters.date}T00:00:00+07:00`,
         to: `${filters.date}T23:59:59.999+07:00`,
@@ -120,7 +120,7 @@ export async function getMatches(filters: MatchFilters) {
 export async function getMatchById(id: number) {
   if (!Number.isSafeInteger(id) || id < 1) return null
   try {
-    return register(await matchApi.get(id))
+    return register(await publicMatchApi.get(id))
   } catch (error) {
     if (
       error instanceof Error &&
@@ -140,7 +140,7 @@ export async function getMatchStatistics(id: number) {
 }
 export async function getStandings(id: number) {
   try {
-    const standing = await standingApi.getByCompetitionSeason(id)
+    const standing = await publicStandingApi.getByCompetitionSeason(id)
     return standing.tables.map((table) =>
       table.map((row) => {
         if (row.teamId !== null)
@@ -185,7 +185,7 @@ export async function getMatchRecentForm(
   beforeTime: string,
 ): Promise<RecentFormResult> {
   if (realMatches.has(matchId)) {
-    const result = await matchApi.recentForm(matchId)
+    const result = await publicMatchApi.recentForm(matchId)
     return {
       home: result.home.map(({ match, outcome }) => ({
         match: register(match),
@@ -232,7 +232,7 @@ export async function getHeadToHead(
   page: number,
 ): Promise<HeadToHeadResult> {
   if (realMatches.has(matchId)) {
-    const result = await matchApi.headToHead(matchId, page)
+    const result = await publicMatchApi.headToHead(matchId, page)
     result.matches.content.forEach(register)
     return result
   }

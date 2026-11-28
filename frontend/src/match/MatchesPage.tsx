@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react'
 import {
+  Ban,
+  CalendarClock,
+  ChartNoAxesColumn,
+  CircleCheck,
+  Clock3,
+  Eye,
+  EyeOff,
+  Pencil,
+  Radio,
+  Trash2,
+} from 'lucide-react'
+import {
   matchApi,
   statusLabels,
   formatScore,
@@ -11,21 +23,34 @@ import {
 import MatchForm from './MatchForm'
 import MatchCatalogSelect from './MatchCatalogSelect'
 import MatchStatisticsDialog from './MatchStatisticsDialog'
+import { errorMessage } from '../shared/api'
 import EntityLogo from '../shared/EntityLogo'
 import {
   Button,
   Field,
   ListTable,
+  Modal,
+  ErrorNotice,
   PageHeading,
   Pagination,
-  RowActions,
 } from '../shared/ui'
 import { useList } from '../shared/useList'
 import { useRecordDialogs } from '../shared/useRecordDialogs'
+const matchStatusIcons = {
+  SCHEDULED: Clock3,
+  LIVE: Radio,
+  FINISHED: CircleCheck,
+  POSTPONED: CalendarClock,
+  CANCELLED: Ban,
+}
 export default function MatchesPage() {
   const [filterReset, setFilterReset] = useState(0)
   const [statisticsMatch, setStatisticsMatch] = useState<Match | null>(null)
-  const list = useList(matchApi.list)
+  const [visibilityMatch, setVisibilityMatch] = useState<Match | null>(null)
+  const [visibilityBusy, setVisibilityBusy] = useState(false)
+  const [visibilityError, setVisibilityError] = useState('')
+  const [visibilityNotice, setVisibilityNotice] = useState('')
+  const list = useList(matchApi.list, true)
   const { refresh } = list
   const records = useRecordDialogs(matchApi, list.refresh)
   // Poll the authoritative backend; never derive LIVE or scores from the browser clock.
@@ -50,6 +75,21 @@ export default function MatchesPage() {
         <p className="success-notice" role="status">
           {records.notice}
         </p>
+      )}
+      {visibilityNotice && (
+        <p className="success-notice" role="status">
+          {visibilityNotice}
+        </p>
+      )}
+      {list.refreshError && (
+        <div role="alert">
+          <ErrorNotice
+            message={`Không thể cập nhật danh sách: ${list.refreshError}`}
+          />
+          <Button secondary onClick={list.refresh}>
+            Thử lại
+          </Button>
+        </div>
       )}
       <section className="ui-card management-card match-management">
         <form
@@ -98,6 +138,16 @@ export default function MatchesPage() {
                   {label}
                 </option>
               ))}
+            </select>
+          </Field>
+          <Field label="Hiển thị Customer">
+            <select
+              value={list.params.get('hidden') || ''}
+              onChange={(event) => list.change({ hidden: event.target.value })}
+            >
+              <option value="">Tất cả</option>
+              <option value="false">Đang hiển thị</option>
+              <option value="true">Đã ẩn</option>
             </select>
           </Field>
           <Field label="Từ thời gian (giờ Việt Nam)">
@@ -149,6 +199,7 @@ export default function MatchesPage() {
                 homeTeamId: '',
                 awayTeamId: '',
                 status: '',
+                hidden: '',
                 from: '',
                 to: '',
                 direction: '',
@@ -166,6 +217,7 @@ export default function MatchesPage() {
             'Đội khách',
             'Trạng thái',
             'Thống kê',
+            'Hiển thị',
             'Thời gian (VN)',
             'Thao tác',
           ]}
@@ -174,64 +226,132 @@ export default function MatchesPage() {
           empty={!list.data?.content.length}
           retry={list.refresh}
         >
-          {list.data?.content.map((item) => (
-            <tr key={item.id}>
-              <td>
-                <strong>{item.competitionSeasonName}</strong>
-                <small className="match-subtext">
-                  {item.round || '—'} · #{item.id}
-                </small>
-              </td>
-              <td>
-                <span className="competition-name">
-                  <EntityLogo
-                    name={item.homeTeamName}
-                    logo={item.homeTeamLogo}
-                  />
-                  {item.homeTeamName}
-                </span>
-              </td>
-              <td>
-                <strong className="match-score">{formatScore(item)}</strong>
-              </td>
-              <td>
-                <span className="competition-name">
-                  <EntityLogo
-                    name={item.awayTeamName}
-                    logo={item.awayTeamLogo}
-                  />
-                  {item.awayTeamName}
-                </span>
-              </td>
-              <td>
-                <span
-                  className={`type-badge match-status-${item.status.toLowerCase()}`}
-                >
-                  {statusLabels[item.status]}
-                </span>
-              </td>
-              <td>
-                <span className="type-badge">
-                  {item.hasStatistics ? 'Đã lưu' : 'Chưa có'}
-                </span>
-              </td>
-              <td>
-                <time dateTime={item.kickoffTime}>
-                  {formatVietnamTime(item.kickoffTime)}
-                </time>
-              </td>
-              <td>
-                <Button secondary onClick={() => setStatisticsMatch(item)}>
-                  Thống kê
-                </Button>
-                <RowActions
-                  view={() => records.select('view', item)}
-                  edit={() => records.select('edit', item)}
-                  remove={() => records.select('delete', item)}
-                />
-              </td>
-            </tr>
-          ))}
+          {list.data?.content.map((item) => {
+            const StatusIcon = matchStatusIcons[item.status]
+            return (
+              <tr key={item.id}>
+                <td>
+                  <strong>{item.competitionSeasonName}</strong>
+                  <small className="match-subtext">
+                    {item.round || '—'} · #{item.id}
+                  </small>
+                </td>
+                <td>
+                  <span className="competition-name">
+                    <EntityLogo
+                      name={item.homeTeamName}
+                      logo={item.homeTeamLogo}
+                    />
+                    {item.homeTeamName}
+                  </span>
+                </td>
+                <td>
+                  <strong className="match-score">{formatScore(item)}</strong>
+                </td>
+                <td>
+                  <span className="competition-name">
+                    <EntityLogo
+                      name={item.awayTeamName}
+                      logo={item.awayTeamLogo}
+                    />
+                    {item.awayTeamName}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`match-icon-badge match-status-${item.status.toLowerCase()}`}
+                    title={statusLabels[item.status]}
+                    aria-label={`Trạng thái: ${statusLabels[item.status]}`}
+                  >
+                    <StatusIcon size={18} aria-hidden="true" />
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`match-icon-badge ${item.hasStatistics ? 'match-icon-positive' : 'match-icon-muted'}`}
+                    title={
+                      item.hasStatistics
+                        ? 'Đã lưu thống kê'
+                        : 'Chưa có thống kê'
+                    }
+                    aria-label={
+                      item.hasStatistics
+                        ? 'Đã lưu thống kê'
+                        : 'Chưa có thống kê'
+                    }
+                  >
+                    <ChartNoAxesColumn size={18} aria-hidden="true" />
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`match-icon-badge ${item.hidden ? 'match-icon-muted' : 'match-icon-positive'}`}
+                    title={item.hidden ? 'Đã ẩn' : 'Đang hiển thị'}
+                    aria-label={item.hidden ? 'Đã ẩn' : 'Đang hiển thị'}
+                  >
+                    {item.hidden ? (
+                      <EyeOff size={18} aria-hidden="true" />
+                    ) : (
+                      <Eye size={18} aria-hidden="true" />
+                    )}
+                  </span>
+                </td>
+                <td>
+                  <time dateTime={item.kickoffTime}>
+                    {formatVietnamTime(item.kickoffTime)}
+                  </time>
+                </td>
+                <td>
+                  <div className="row-actions match-row-actions">
+                    <button
+                      type="button"
+                      title={item.hidden ? 'Hiện trận đấu' : 'Ẩn trận đấu'}
+                      aria-label={item.hidden ? 'Hiện trận đấu' : 'Ẩn trận đấu'}
+                      onClick={() => {
+                        setVisibilityMatch(item)
+                        setVisibilityError('')
+                      }}
+                    >
+                      {item.hidden ? <Eye size={17} /> : <EyeOff size={17} />}
+                    </button>
+                    <button
+                      type="button"
+                      title="Thống kê"
+                      aria-label="Thống kê"
+                      onClick={() => setStatisticsMatch(item)}
+                    >
+                      <ChartNoAxesColumn size={17} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Chi tiết"
+                      aria-label="Chi tiết"
+                      onClick={() => records.select('view', item)}
+                    >
+                      <Eye size={17} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Chỉnh sửa"
+                      aria-label="Chỉnh sửa"
+                      onClick={() => records.select('edit', item)}
+                    >
+                      <Pencil size={17} />
+                    </button>
+                    <button
+                      type="button"
+                      className="danger-text"
+                      title="Xóa"
+                      aria-label="Xóa"
+                      onClick={() => records.select('delete', item)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
         </ListTable>
         <Pagination
           page={list.page}
@@ -249,6 +369,56 @@ export default function MatchesPage() {
           onClose={() => setStatisticsMatch(null)}
           onSaved={list.refresh}
         />
+      )}
+      {visibilityMatch && (
+        <Modal
+          title={visibilityMatch.hidden ? 'Hiện trận đấu' : 'Ẩn trận đấu'}
+          onClose={() => setVisibilityMatch(null)}
+          busy={visibilityBusy}
+        >
+          <div className="dialog-body">
+            <p>
+              {visibilityMatch.hidden
+                ? 'Trận đấu sẽ hiển thị lại trên Customer UI.'
+                : 'Trận đấu và lịch sử liên quan sẽ không hiển thị trên Customer UI. Dữ liệu vẫn được lưu.'}
+            </p>
+            <ErrorNotice message={visibilityError} />
+            <div className="dialog-actions">
+              <Button
+                secondary
+                disabled={visibilityBusy}
+                onClick={() => setVisibilityMatch(null)}
+              >
+                Hủy
+              </Button>
+              <Button
+                disabled={visibilityBusy}
+                onClick={async () => {
+                  setVisibilityBusy(true)
+                  try {
+                    await matchApi.visibility(
+                      visibilityMatch.id,
+                      !visibilityMatch.hidden,
+                    )
+                    setVisibilityNotice(
+                      visibilityMatch.hidden
+                        ? 'Đã hiện trận đấu.'
+                        : 'Đã ẩn trận đấu.',
+                    )
+                    setVisibilityMatch(null)
+                    list.refresh()
+                  } catch (error) {
+                    setVisibilityError(errorMessage(error))
+                  } finally {
+                    setVisibilityBusy(false)
+                  }
+                }}
+              >
+                Xác nhận
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
       {(records.creating || records.selection?.mode === 'edit') && (
         <MatchForm
