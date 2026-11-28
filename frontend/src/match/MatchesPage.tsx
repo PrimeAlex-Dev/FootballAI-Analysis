@@ -7,6 +7,7 @@ import {
   Clock3,
   Eye,
   EyeOff,
+  FileOutput,
   Pencil,
   Radio,
   Trash2,
@@ -23,6 +24,7 @@ import {
 import MatchForm from './MatchForm'
 import MatchCatalogSelect from './MatchCatalogSelect'
 import MatchStatisticsDialog from './MatchStatisticsDialog'
+import MatchPromptDialog from './MatchPromptDialog'
 import { errorMessage } from '../shared/api'
 import EntityLogo from '../shared/EntityLogo'
 import {
@@ -46,6 +48,7 @@ const matchStatusIcons = {
 export default function MatchesPage() {
   const [filterReset, setFilterReset] = useState(0)
   const [statisticsMatch, setStatisticsMatch] = useState<Match | null>(null)
+  const [promptMatch, setPromptMatch] = useState<Match | null>(null)
   const [visibilityMatch, setVisibilityMatch] = useState<Match | null>(null)
   const [visibilityBusy, setVisibilityBusy] = useState(false)
   const [visibilityError, setVisibilityError] = useState('')
@@ -305,6 +308,14 @@ export default function MatchesPage() {
                   <div className="row-actions match-row-actions">
                     <button
                       type="button"
+                      title="Export Prompt"
+                      aria-label="Export Prompt"
+                      onClick={() => setPromptMatch(item)}
+                    >
+                      <FileOutput size={17} />
+                    </button>
+                    <button
+                      type="button"
                       title={item.hidden ? 'Hiện trận đấu' : 'Ẩn trận đấu'}
                       aria-label={item.hidden ? 'Hiện trận đấu' : 'Ẩn trận đấu'}
                       onClick={() => {
@@ -368,6 +379,12 @@ export default function MatchesPage() {
           match={statisticsMatch}
           onClose={() => setStatisticsMatch(null)}
           onSaved={list.refresh}
+        />
+      )}
+      {promptMatch && (
+        <MatchPromptDialog
+          match={promptMatch}
+          onClose={() => setPromptMatch(null)}
         />
       )}
       {visibilityMatch && (

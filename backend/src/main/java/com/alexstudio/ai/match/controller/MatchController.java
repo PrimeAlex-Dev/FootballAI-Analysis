@@ -3,6 +3,7 @@ import java.time.Instant;
 import com.alexstudio.ai.match.dto.*;
 import com.alexstudio.ai.match.entity.MatchStatus;
 import com.alexstudio.ai.match.service.MatchService;
+import com.alexstudio.ai.match.service.MatchAnalysisPromptService;
 import com.alexstudio.ai.common.dto.VisibilityRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/matches")
 public class MatchController {
     private final MatchService service;
-    public MatchController(MatchService service) {
+    private final MatchAnalysisPromptService prompts;
+    public MatchController(MatchService service, MatchAnalysisPromptService prompts) {
         this.service = service;
+        this.prompts = prompts;
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -25,6 +28,10 @@ public class MatchController {
     @GetMapping("/{id}")
     public MatchResponse get(@PathVariable @Min(1) Long id) {
         return service.get(id);
+    }
+    @GetMapping("/{id}/analysis-prompt")
+    public MatchAnalysisPromptResponse analysisPrompt(@PathVariable @Min(1) Long id) {
+        return prompts.export(id);
     }
     @GetMapping("/{id}/recent-form")
     public RecentFormResponse recentForm(@PathVariable @Min(1) Long id) {

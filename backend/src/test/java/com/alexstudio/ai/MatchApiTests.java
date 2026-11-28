@@ -255,6 +255,64 @@ class MatchApiTests {
         }
     }
     @Test
+    void analysisPromptUsesFiveLatestMatchesBothStatSidesAndHiddenHistoryWithoutWriting() throws Exception {
+        int target = create(body("SCHEDULED", NOW.plusSeconds(86400), null, null));
+        create(body("FINISHED", NOW.minusSeconds(60), 0, 0));
+        int awayFixture = create(body("FINISHED", NOW.minusSeconds(120), 2, 1).replace(
+                "\"homeTeamId\":" + home + ",\"awayTeamId\":" + away,
+                "\"homeTeamId\":" + away + ",\"awayTeamId\":" + home));
+        create(body("FINISHED", NOW.minusSeconds(180), 3, 1));
+        for (int index = 4; index <= 6; index++)
+            create(body("FINISHED", NOW.minusSeconds(index * 60L), 1, 0));
+        create(body("LIVE", NOW.minusSeconds(500), 2, 0));
+        create(body("FINISHED", NOW.plusSeconds(2 * 86400), 4, 0));
+        assertThat(call("PATCH", "/api/matches/" + awayFixture + "/visibility", "{\"hidden\":true}").statusCode())
+                .isEqualTo(200);
+        try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
+            statement.executeUpdate(
+                    "insert into match_statistics(match_id,created_at,updated_at,home_shots,away_shots,home_xg,away_xg) values ("
+                            + awayFixture + ",now(),now(),0,7,0.00,1.25)");
+        }
+        try {
+            var exported = call("GET", "/api/matches/" + target + "/analysis-prompt", null);
+            assertThat(exported.statusCode()).withFailMessage(exported.body()).isEqualTo(200);
+            assertThat(read(exported, "$.homeRecentCount")).isEqualTo(5);
+            assertThat(read(exported, "$.awayRecentCount")).isEqualTo(5);
+            assertThat(read(exported, "$.homeMatchesWithStatistics")).isEqualTo(1);
+            assertThat(read(exported, "$.awayMatchesWithStatistics")).isEqualTo(1);
+            String prompt = JsonPath.read(exported.body(), "$.prompt");
+            assertThat(prompt).contains("PHẦN 1", "PHẦN 5", prefix + " League 2188/2189",
+                    prefix + " Away 2–1 " + prefix + " Home", "Thống kê " + prefix + " Away: Sút 0; xG 0.00",
+                    "Thống kê " + prefix + " Home: Sút 7; xG 1.25", "Chưa có Match Statistics.",
+                    "Phong độ (mới nhất → cũ nhất): D-L-W-W-W");
+            assertThat(prompt).doesNotContain("Match QA invalid", "Phạt góc 0", "fouls");
+            assertThat(prompt.indexOf("0–0")).isLessThan(prompt.indexOf("2–1"));
+            assertThat(call("GET", "/api/matches/999999999/analysis-prompt", null).statusCode()).isEqualTo(404);
+            assertThat(read(get(target), "$.status")).isEqualTo("SCHEDULED");
+            assertThat(call("GET", "/api/matches/" + target + "/analysis-prompt", null).body())
+                    .isEqualTo(exported.body());
+            assertThat(call("PATCH", "/api/matches/" + target + "/visibility", "{\"hidden\":true}").statusCode())
+                    .isEqualTo(200);
+            assertThat(call("GET", "/api/matches/" + target + "/analysis-prompt", null).body())
+                    .isEqualTo(exported.body());
+        } finally {
+            try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
+                statement.executeUpdate("delete from match_statistics where match_id=" + awayFixture);
+            }
+        }
+    }
+    @Test
+    void analysisPromptReportsEmptyHistory() throws Exception {
+        int target = create(body("SCHEDULED", NOW.plusSeconds(86400), null, null));
+        var response = call("GET", "/api/matches/" + target + "/analysis-prompt", null);
+        assertThat(response.statusCode()).withFailMessage(response.body()).isEqualTo(200);
+        assertThat(read(response, "$.homeRecentCount")).isEqualTo(0);
+        assertThat(read(response, "$.awayRecentCount")).isEqualTo(0);
+        String prompt = JsonPath.read(response.body(), "$.prompt");
+        assertThat(prompt).contains("Không có trận đã kết thúc trước trận mục tiêu.",
+                "Không có dữ liệu đối đầu trước trận mục tiêu.", "0/5 trận lịch sử; 0/0 trận có Match Statistics.");
+    }
+    @Test
     void recentFormKeepsOnlyTenNewestMatches() throws Exception {
         int target = create(body("SCHEDULED", NOW.plusSeconds(600), null, null));
         int newest = 0;

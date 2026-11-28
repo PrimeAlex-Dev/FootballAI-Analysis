@@ -1,5 +1,7 @@
 # Match — API và giao diện quản trị
 
+Export Prompt dành cho Admin tại `GET /api/matches/{id}/analysis-prompt`; contract ở [Match Analysis Prompt API](match-analysis-prompt-api.md).
+
 ## Ẩn/hiện trên Customer UI
 
 Migration V8 thêm `matches.is_hidden BOOLEAN NOT NULL DEFAULT FALSE`; chín field nghiệp vụ Match bên dưới không đổi. MatchResponse thêm `hidden`. Admin dùng `PATCH /api/matches/{id}/visibility` với body `{"hidden":true}` hoặc `false`; API quản trị vẫn đọc được trận ẩn. Danh sách Admin hỗ trợ lọc `hidden=true/false`.

@@ -485,6 +485,30 @@
   width: min(860px, calc(100% - 32px));
   max-width: calc(100% - 32px);
 }
+.admin-dialog.match-prompt-modal {
+  width: min(900px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
+}
+.match-prompt-dialog {
+  min-width: 0;
+}
+.match-prompt-dialog textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 45vh;
+  max-height: 60vh;
+  resize: vertical;
+  font: 13px/1.6 monospace;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.match-prompt-coverage {
+  color: var(--muted);
+}
 .match-statistics-dialog {
   min-width: 0;
 }
