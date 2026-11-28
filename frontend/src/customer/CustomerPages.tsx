@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -42,6 +42,8 @@ import {
 import type { FormResult, MatchFilters } from './service'
 import type { Match, Prediction, Standing, Statistic, Status } from './types'
 import './customer.css'
+
+const PlayingStyleRadarView = lazy(() => import('./PlayingStyleRadar'))
 
 function useAsync<T>(load: () => Promise<T>, dependencies: unknown[]) {
   const key = JSON.stringify(dependencies)
@@ -1044,6 +1046,22 @@ export function FormPage() {
   )
 }
 export function StatisticsPage() {
+  const match = useMatch()
+  if (match.status === 'SCHEDULED')
+    return (
+      <Suspense
+        fallback={
+          <section className="customer-panel content-card" role="status">
+            Đang tải biểu đồ…
+          </section>
+        }
+      >
+        <PlayingStyleRadarView key={match.id} match={match} />
+      </Suspense>
+    )
+  return <LegacyStatisticsPage />
+}
+function LegacyStatisticsPage() {
   const match = useMatch()
   const result = useAsync(() => getMatchStatistics(match.id), [match.id])
   if (!result.data)

@@ -55,6 +55,22 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             """)
     List<MatchResponse> recentForm(Long teamId, Instant beforeTime, Pageable pageable);
 
+    @Query(value = """
+            with appearances as (
+                select id as match_id, home_team_id as team_id, true as home_side, kickoff_time
+                from matches where status = 'FINISHED' and is_hidden = false and kickoff_time < :beforeTime
+                union all
+                select id as match_id, away_team_id as team_id, false as home_side, kickoff_time
+                from matches where status = 'FINISHED' and is_hidden = false and kickoff_time < :beforeTime
+            ), ranked as (
+                select team_id, match_id, home_side,
+                    row_number() over (partition by team_id order by kickoff_time desc, match_id desc) as position
+                from appearances
+            )
+            select team_id, match_id, home_side from ranked where position <= 5
+            """, nativeQuery = true)
+    List<Object[]> recentAppearancesForRadar(Instant beforeTime);
+
     @Query(PROJECTION + """
             and m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
             and m.kickoffTime < :beforeTime

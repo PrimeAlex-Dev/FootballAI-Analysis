@@ -1,5 +1,7 @@
 # Customer UI
 
+Tab Thống kê của trận sắp diễn ra dùng [Playing Style Radar V1](playing-style-radar-api.md) từ API thật. Trận trạng thái khác giữ giao diện thống kê hiện có. Radar chỉ vẽ khi cả hai đội có đủ sáu điểm; thiếu mẫu hiển thị chỉ số gốc, không gán 0.
+
 Customer đọc Match và Standing qua `/api/public/matches` và `/api/public/competition-seasons/{id}/standing`. Match ẩn không xuất hiện trong danh sách, chi tiết, Recent Form hoặc H2H; Standing ẩn hiển thị “Chưa có dữ liệu”. API quản trị `/api/matches` và `/api/standings` vẫn đọc được dữ liệu ẩn.
 
 Tab Bảng xếp hạng gọi Standing API theo CompetitionSeason của Match; hiển thị các bảng theo thứ tự nguồn, tô sáng hai đội trong trận và hiện trạng thái chưa có dữ liệu khi thiếu Standing. Xem [Standing API](standing-api.md).
