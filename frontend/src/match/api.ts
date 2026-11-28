@@ -43,6 +43,30 @@ export type MatchAnalysisPrompt = {
   homeMatchesWithStatistics: number
   awayMatchesWithStatistics: number
 }
+export type MatchAnalysisStatus = 'DRAFT' | 'PUBLISHED'
+export type MatchAnalysisInput = {
+  analysisContent: string
+  predictionContent: string
+  status: MatchAnalysisStatus
+}
+export type MatchAnalysis = MatchAnalysisInput & { matchId: number }
+export const matchAnalysisApi = {
+  get: (id: number) => request<MatchAnalysis>(`/matches/${id}/analysis`),
+  create: (id: number, input: MatchAnalysisInput) =>
+    request<MatchAnalysis>(`/matches/${id}/analysis`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  update: (id: number, input: MatchAnalysisInput) =>
+    request<MatchAnalysis>(`/matches/${id}/analysis`, {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: number) =>
+    request<void>(`/matches/${id}/analysis`, { method: 'DELETE' }),
+  getPublic: (id: number) =>
+    request<MatchAnalysis>(`/public/matches/${id}/analysis`),
+}
 export const matchApi = {
   list: (params: string, signal?: AbortSignal) =>
     request<Page<Match>>(`/matches?${params}`, { signal }),

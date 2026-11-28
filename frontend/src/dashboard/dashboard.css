@@ -485,6 +485,23 @@
   width: min(860px, calc(100% - 32px));
   max-width: calc(100% - 32px);
 }
+.admin-dialog.match-analysis-modal {
+  width: min(860px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
+}
+.match-analysis-dialog,
+.match-analysis-dialog .admin-field {
+  min-width: 0;
+}
+.match-analysis-dialog textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.match-analysis-dialog .dialog-actions {
+  flex-wrap: wrap;
+}
 .admin-dialog.match-prompt-modal {
   width: min(900px, calc(100% - 32px));
   max-width: calc(100% - 32px);

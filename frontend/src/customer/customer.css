@@ -1020,6 +1020,34 @@
   line-height: 1.8;
   color: var(--text);
 }
+.ai-text-card {
+  box-sizing: border-box;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ai-text-card .analysis-text {
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.prediction-highlight {
+  padding: 18px 20px;
+  border-left: 3px solid var(--primary);
+  border-radius: 10px;
+  background: var(--raised);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 700;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .factor-list {
   padding: 0;
   list-style: none;

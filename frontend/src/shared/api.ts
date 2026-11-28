@@ -8,6 +8,14 @@ export interface Page<T> {
   }
 }
 const messages: Record<string, string> = {
+  'Match analysis not found': 'Trận đấu chưa có nhận định.',
+  'Match analysis already exists':
+    'Trận đấu đã có nhận định. Vui lòng tải lại để chỉnh sửa.',
+  'Analysis status is required': 'Phải chọn trạng thái nhận định.',
+  'Match analysis word limit exceeded':
+    'Nội dung nhận định vượt giới hạn số từ.',
+  'Published analysis requires both contents':
+    'Cần nhập cả phân tích và dự đoán trước khi xuất bản.',
   'Match status is required when updating':
     'Phải chọn trạng thái khi cập nhật trận đấu.',
   'Match not found': 'Trận đấu không còn tồn tại.',

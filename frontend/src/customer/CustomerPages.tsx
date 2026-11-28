@@ -555,12 +555,48 @@ export function AiPage() {
   const match = useMatch()
   const result = useAsync(() => getMatchPrediction(match.id), [match.id])
   if (result.loading) return <div className="customer-panel skeleton" />
+  if (result.error)
+    return (
+      <Empty
+        title="Không tải được nhận định AI"
+        text="Vui lòng thử tải lại trang."
+      />
+    )
   if (!result.data)
     return (
       <Empty
         title="Chưa có nhận định AI"
         text="Nhận định cho trận đấu này hiện chưa có dữ liệu."
       />
+    )
+  if ('analysisContent' in result.data)
+    return (
+      <div className="detail-grid ai-grid">
+        <section className="customer-panel content-card ai-text-card">
+          <span className="eyebrow">
+            <Sparkles size={16} /> NHẬN ĐỊNH TRẬN ĐẤU
+          </span>
+          <h2>Nhận định AI</h2>
+          <p
+            className="analysis-text"
+            tabIndex={0}
+            aria-label="Nội dung nhận định AI"
+          >
+            {result.data.analysisContent}
+          </p>
+        </section>
+        <section className="customer-panel content-card ai-text-card">
+          <span className="eyebrow">DỰ ĐOÁN TRẬN ĐẤU</span>
+          <h2>Dự đoán AI</h2>
+          <p
+            className="analysis-text prediction-highlight"
+            tabIndex={0}
+            aria-label="Nội dung dự đoán AI"
+          >
+            {result.data.predictionContent}
+          </p>
+        </section>
+      </div>
     )
   const prediction: Prediction = result.data
   const values = [
