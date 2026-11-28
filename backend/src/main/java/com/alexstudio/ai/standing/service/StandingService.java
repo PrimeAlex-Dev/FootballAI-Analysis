@@ -32,17 +32,21 @@ public class StandingService {
         this.clock = clock;
     }
     @Transactional(readOnly = true)
-    public Page<StandingSummary> list(Long competitionSeasonId, int page, int size) {
+    public Page<StandingSummary> list(Long competitionSeasonId, Boolean hidden, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Standing> result = competitionSeasonId == null
-                ? standings.findAll(pageable)
-                : standings.findPageByCompetitionSeasonId(competitionSeasonId, pageable);
+        Page<Standing> result = hidden == null
+                ? competitionSeasonId == null
+                        ? standings.findAll(pageable)
+                        : standings.findPageByCompetitionSeasonId(competitionSeasonId, pageable)
+                : competitionSeasonId == null
+                        ? standings.findByHidden(hidden, pageable)
+                        : standings.findByCompetitionSeasonIdAndHidden(competitionSeasonId, hidden, pageable);
         return result.map(value -> {
             List<StandingRow> items = rows.findByStandingIdOrderByTableIndexAscRowIndexAsc(value.getId());
             return new StandingSummary(value.getId(), value.getCompetitionSeasonId(),
                     competitionSeasons.get(value.getCompetitionSeasonId()).displayName(),
                     items.stream().map(StandingRow::getTableIndex).distinct().count(), items.size(),
-                    value.getUpdatedAt());
+                    value.getUpdatedAt(), value.isHidden());
         });
     }
     @Transactional(readOnly = true)
@@ -53,6 +57,20 @@ public class StandingService {
     public StandingResponse getByCompetitionSeason(Long id) {
         competitionSeasons.get(id);
         return response(standings.findByCompetitionSeasonId(id).orElseThrow(this::missing));
+    }
+    @Transactional(readOnly = true)
+    public StandingResponse getPublicByCompetitionSeason(Long id) {
+        competitionSeasons.get(id);
+        return response(standings.findByCompetitionSeasonIdAndHiddenFalse(id).orElseThrow(this::missing));
+    }
+    @Transactional
+    public StandingResponse setHidden(Long id, boolean hidden) {
+        Standing standing = standings.findById(id).orElseThrow(this::missing);
+        Standing locked = standings.lockByCompetitionSeasonId(standing.getCompetitionSeasonId())
+                .orElseThrow(this::missing);
+        locked.setHidden(hidden);
+        standings.flush();
+        return response(locked);
     }
     @Transactional(readOnly = true)
     public StandingPreview preview(Long id, JsonNode input) {
@@ -115,7 +133,7 @@ public class StandingService {
         }
         return new StandingResponse(standing.getId(), standing.getCompetitionSeasonId(),
                 competitionSeasons.get(standing.getCompetitionSeasonId()).displayName(), standing.getCreatedAt(),
-                standing.getUpdatedAt(), tables);
+                standing.getUpdatedAt(), tables, standing.isHidden());
     }
     private List<List<StandingRowResponse>> parse(JsonNode input, boolean requireResolved) {
         if (input == null || !input.isObject() || !input.has("tables") || input.size() > 2

@@ -1,12 +1,18 @@
 # Match — API và giao diện quản trị
 
+## Ẩn/hiện trên Customer UI
+
+Migration V8 thêm `matches.is_hidden BOOLEAN NOT NULL DEFAULT FALSE`; chín field nghiệp vụ Match bên dưới không đổi. MatchResponse thêm `hidden`. Admin dùng `PATCH /api/matches/{id}/visibility` với body `{"hidden":true}` hoặc `false`; API quản trị vẫn đọc được trận ẩn. Danh sách Admin hỗ trợ lọc `hidden=true/false`.
+
+Customer dùng `GET /api/public/matches`, `GET /api/public/matches/{id}`, `GET /api/public/matches/{id}/recent-form` và `GET /api/public/matches/{id}/head-to-head`. Danh sách lọc trận ẩn tại database trước phân trang, chi tiết trận ẩn trả 404. Recent Form và H2H loại trận ẩn khỏi cả danh sách và số liệu tổng; trận gốc ẩn trả 404. Cập nhật Match không đổi trạng thái ẩn.
+
 MatchResponse có thêm `hasStatistics` tính từ bảng Statistics. Xem [Match Statistics API](match-statistics-api.md).
 
 Trạng thái: triển khai theo thiết kế Match hiện tại; không tự đánh dấu Reference Module được duyệt. Tuân thủ [Coding Standards](../standards/AI_Football_Analysis_Sprint_1_Coding_Standards.md).
 
 ## Phạm vi dữ liệu
 
-Entity có đúng 9 field: id, competitionSeasonId, homeTeamId, awayTeamId, kickoffTime, status, homeScore, awayScore, round. Ba ID tham chiếu được lưu dạng scalar; FK nằm ở database, không lưu trùng tên hoặc logo. Không thêm Standing/Squad/Player/thống kê/AI, WDL, bảng RecentForm/H2H hoặc quy tắc nhận diện trùng trận chưa được chốt.
+Entity có 9 field nghiệp vụ và trạng thái ẩn `is_hidden`: id, competitionSeasonId, homeTeamId, awayTeamId, kickoffTime, status, homeScore, awayScore, round. Ba ID tham chiếu được lưu dạng scalar; FK nằm ở database, không lưu trùng tên hoặc logo. Không thêm Standing/Squad/Player/thống kê/AI, WDL, bảng RecentForm/H2H hoặc quy tắc nhận diện trùng trận chưa được chốt.
 
 CompetitionSeason và hai Team phải tồn tại; hai đội khác nhau. Tạo/sửa kiểm tra qua service công khai của module liên quan. Database dùng FK ON DELETE RESTRICT nên không thể xóa Team/CompetitionSeason đang được Match sử dụng; API hiện có trả 409. Không có cascade xóa lịch sử.
 

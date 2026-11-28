@@ -13,6 +13,8 @@ public class Standing {
     private Instant createdAt;
     @Column(nullable = false)
     private Instant updatedAt;
+    @Column(name = "is_hidden", nullable = false)
+    private boolean hidden;
     protected Standing() {
     }
     public Standing(Long competitionSeasonId, Instant now) {
@@ -34,5 +36,11 @@ public class Standing {
     }
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+    public boolean isHidden() {
+        return hidden;
+    }
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 }

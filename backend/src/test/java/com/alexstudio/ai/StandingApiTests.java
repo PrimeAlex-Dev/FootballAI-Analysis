@@ -86,6 +86,30 @@ class StandingApiTests {
                 "select count(*) from standing_rows where standing_id=(select id from standings where competition_season_id=?)",
                 Integer.class, link)).isEqualTo(2);
     }
+    @Test
+    void hiddenStandingKeepsRowsAndCanBeRestored() throws Exception {
+        String base = "/api/competition-seasons/" + link + "/standing";
+        String teamName = jdbc.queryForObject("select name from teams where id=?", String.class, home);
+        String input = "{\"tables\":[[" + row(teamName, 1, 7) + "]]}";
+        assertThat(call("POST", base, input).statusCode()).isEqualTo(201);
+        long standingId = jdbc.queryForObject("select id from standings where competition_season_id=?", Long.class,
+                link);
+        String publicPath = "/api/public/competition-seasons/" + link + "/standing";
+        assertThat(call("GET", publicPath, null).statusCode()).isEqualTo(200);
+        assertThat(call("PATCH", "/api/standings/" + standingId + "/visibility", "{\"hidden\":true}").statusCode())
+                .isEqualTo(200);
+        assertThat(call("GET", publicPath, null).statusCode()).isEqualTo(404);
+        assertThat(call("GET", base, null).body()).contains("\"hidden\":true");
+        assertThat(call("GET", "/api/standings?hidden=true", null).body()).contains("\"id\":" + standingId);
+        assertThat(jdbc.queryForObject("select count(*) from standing_rows where standing_id=?", Integer.class,
+                standingId)).isEqualTo(1);
+        assertThat(call("PUT", base, input).statusCode()).isEqualTo(200);
+        assertThat(call("GET", publicPath, null).statusCode()).isEqualTo(404);
+        assertThat(call("PATCH", "/api/standings/" + standingId + "/visibility", "{}").statusCode()).isEqualTo(400);
+        assertThat(call("PATCH", "/api/standings/" + standingId + "/visibility", "{\"hidden\":false}").statusCode())
+                .isEqualTo(200);
+        assertThat(call("GET", publicPath, null).body()).contains("\"points\":7");
+    }
     private String row(String name, int rank, int points) {
         return "{\"rank\":" + rank + ",\"team\":\"" + name
                 + "\",\"matchesPlayed\":1,\"wins\":0,\"draws\":0,\"losses\":1,\"goalsFor\":0,\"goalsAgainst\":1,\"goalDifference\":-1,\"points\":"

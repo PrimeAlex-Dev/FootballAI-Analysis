@@ -51,7 +51,18 @@ public class MatchService {
     }
     @Transactional(readOnly = true)
     public MatchResponse get(Long id) {
-        return matches.findResponse(id).orElseThrow(() -> missing());
+        return matches.findResponse(id, false).orElseThrow(() -> missing());
+    }
+    @Transactional(readOnly = true)
+    public MatchResponse getPublic(Long id) {
+        return matches.findResponse(id, true).orElseThrow(() -> missing());
+    }
+    @Transactional
+    public MatchResponse setHidden(Long id, boolean hidden) {
+        Match match = matches.findForUpdate(id).orElseThrow(() -> missing());
+        match.setHidden(hidden);
+        matches.flush();
+        return get(id);
     }
     @Transactional
     public void delete(Long id) {
@@ -62,19 +73,38 @@ public class MatchService {
     @Transactional(readOnly = true)
     public Page<MatchResponse> list(String name, Long competitionSeasonId, Long homeTeamId, Long awayTeamId,
             Long teamId, MatchStatus status, Instant from, Instant to, Sort.Direction direction, int page, int size) {
+        return listFiltered(name, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from, to, direction,
+                null, page, size);
+    }
+    @Transactional(readOnly = true)
+    public Page<MatchResponse> listFiltered(String name, Long competitionSeasonId, Long homeTeamId, Long awayTeamId,
+            Long teamId, MatchStatus status, Instant from, Instant to, Sort.Direction direction, Boolean hidden,
+            int page, int size) {
         if (from != null && to != null && from.isAfter(to))
             throw invalid("Start time must not be after end time");
         String search = name == null || name.isBlank()
                 ? null
                 : "%" + name.trim().toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_",
                         "\\_") + "%";
-        return matches.search(search, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from, to,
+        return matches.search(search, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from, to, false,
+                hidden, PageRequest.of(page, size, Sort.by(direction, "kickoffTime", "id")));
+    }
+    @Transactional(readOnly = true)
+    public Page<MatchResponse> listPublic(String name, Long competitionSeasonId, Long homeTeamId, Long awayTeamId,
+            Long teamId, MatchStatus status, Instant from, Instant to, Sort.Direction direction, int page, int size) {
+        if (from != null && to != null && from.isAfter(to))
+            throw invalid("Start time must not be after end time");
+        String search = name == null || name.isBlank()
+                ? null
+                : "%" + name.trim().toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_",
+                        "\\_") + "%";
+        return matches.search(search, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from, to, true, null,
                 PageRequest.of(page, size, Sort.by(direction, "kickoffTime", "id")));
     }
 
     @Transactional(readOnly = true)
     public RecentFormResponse recentForm(Long id) {
-        Match match = matches.findById(id).orElseThrow(() -> missing());
+        Match match = matches.findById(id).filter(value -> !value.isHidden()).orElseThrow(() -> missing());
         List<FormMatchResponse> home = formFor(match.getHomeTeamId(), match.getKickoffTime());
         List<FormMatchResponse> away = formFor(match.getAwayTeamId(), match.getKickoffTime());
         return new RecentFormResponse(match.getHomeTeamId(), match.getAwayTeamId(), home, away);
@@ -92,7 +122,7 @@ public class MatchService {
 
     @Transactional(readOnly = true)
     public HeadToHeadResponse headToHead(Long id, int page, int size) {
-        Match match = matches.findById(id).orElseThrow(() -> missing());
+        Match match = matches.findById(id).filter(value -> !value.isHidden()).orElseThrow(() -> missing());
         Long homeId = match.getHomeTeamId();
         Long awayId = match.getAwayTeamId();
         Instant beforeTime = match.getKickoffTime();

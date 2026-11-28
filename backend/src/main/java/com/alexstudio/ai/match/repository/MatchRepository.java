@@ -23,15 +23,17 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             select new com.alexstudio.ai.match.dto.MatchResponse(
                 m.id, m.competitionSeasonId, m.homeTeamId, m.awayTeamId, m.kickoffTime, m.status,
                 m.homeScore, m.awayScore, m.round, concat(c.name, ' ', s.name), h.name, h.logo, a.name, a.logo,
-                exists (select ms.id from MatchStatistics ms where ms.matchId = m.id))
+                exists (select ms.id from MatchStatistics ms where ms.matchId = m.id), m.hidden)
             from Match m, CompetitionSeason cs, Competition c, Season s, Team h, Team a
             where m.competitionSeasonId = cs.id and cs.competition.id = c.id and cs.season.id = s.id
                 and m.homeTeamId = h.id and m.awayTeamId = a.id
             """;
-    @Query(PROJECTION + " and m.id = :id")
-    Optional<MatchResponse> findResponse(Long id);
+    @Query(PROJECTION + " and m.id = :id and (:publicOnly = false or m.hidden = false)")
+    Optional<MatchResponse> findResponse(Long id, boolean publicOnly);
 
     @Query(PROJECTION + """
+            and (:publicOnly = false or m.hidden = false)
+            and (:hidden is null or m.hidden = :hidden)
             and (:name is null or lower(h.name) like :name escape '\\' or lower(a.name) like :name escape '\\')
             and (:competitionSeasonId is null or m.competitionSeasonId = :competitionSeasonId)
             and (:homeTeamId is null or m.homeTeamId = :homeTeamId)
@@ -42,10 +44,12 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             and (cast(:toTime as Instant) is null or m.kickoffTime <= :toTime)
             """)
     Page<MatchResponse> search(String name, Long competitionSeasonId, Long homeTeamId, Long awayTeamId, Long teamId,
-            MatchStatus status, Instant fromTime, Instant toTime, Pageable pageable);
+            MatchStatus status, Instant fromTime, Instant toTime, boolean publicOnly, Boolean hidden,
+            Pageable pageable);
 
     @Query(PROJECTION + """
             and m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.hidden = false
             and m.kickoffTime < :beforeTime
             and (m.homeTeamId = :teamId or m.awayTeamId = :teamId)
             """)
@@ -53,6 +57,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     String HEAD_TO_HEAD = """
             m.status = com.alexstudio.ai.match.entity.MatchStatus.FINISHED
+            and m.hidden = false
             and m.kickoffTime < :beforeTime
             and ((m.homeTeamId = :homeTeamId and m.awayTeamId = :awayTeamId)
                 or (m.homeTeamId = :awayTeamId and m.awayTeamId = :homeTeamId))

@@ -3,6 +3,7 @@ import java.time.Instant;
 import com.alexstudio.ai.match.dto.*;
 import com.alexstudio.ai.match.entity.MatchStatus;
 import com.alexstudio.ai.match.service.MatchService;
+import com.alexstudio.ai.common.dto.VisibilityRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Sort;
@@ -44,6 +45,10 @@ public class MatchController {
     public void delete(@PathVariable @Min(1) Long id) {
         service.delete(id);
     }
+    @PatchMapping("/{id}/visibility")
+    public MatchResponse visibility(@PathVariable @Min(1) Long id, @Valid @RequestBody VisibilityRequest request) {
+        return service.setHidden(id, request.hidden());
+    }
     @GetMapping
     public PagedModel<MatchResponse> list(@RequestParam(required = false) String name,
             @RequestParam(required = false) @Positive Long competitionSeasonId,
@@ -51,10 +56,11 @@ public class MatchController {
             @RequestParam(required = false) @Positive Long awayTeamId,
             @RequestParam(required = false) @Positive Long teamId, @RequestParam(required = false) MatchStatus status,
             @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to,
+            @RequestParam(required = false) Boolean hidden,
             @RequestParam(defaultValue = "DESC") Sort.Direction direction,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return new PagedModel<>(service.list(name, competitionSeasonId, homeTeamId, awayTeamId, teamId, status, from,
-                to, direction, page, size));
+        return new PagedModel<>(service.listFiltered(name, competitionSeasonId, homeTeamId, awayTeamId, teamId, status,
+                from, to, direction, hidden, page, size));
     }
 }

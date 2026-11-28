@@ -1,6 +1,8 @@
 package com.alexstudio.ai.standing.controller;
 import com.alexstudio.ai.standing.dto.*;
 import com.alexstudio.ai.standing.service.StandingService;
+import com.alexstudio.ai.common.dto.VisibilityRequest;
+import jakarta.validation.Valid;
 import tools.jackson.databind.JsonNode;
 import jakarta.validation.constraints.*;
 import org.springframework.data.web.PagedModel;
@@ -15,13 +17,17 @@ public class StandingController {
     }
     @GetMapping("/standings")
     public PagedModel<StandingSummary> list(@RequestParam(required = false) @Positive Long competitionSeasonId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(required = false) Boolean hidden, @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return new PagedModel<>(service.list(competitionSeasonId, page, size));
+        return new PagedModel<>(service.list(competitionSeasonId, hidden, page, size));
     }
     @GetMapping("/standings/{id}")
     public StandingResponse get(@PathVariable @Positive Long id) {
         return service.get(id);
+    }
+    @PatchMapping("/standings/{id}/visibility")
+    public StandingResponse visibility(@PathVariable @Positive Long id, @Valid @RequestBody VisibilityRequest request) {
+        return service.setHidden(id, request.hidden());
     }
     @GetMapping("/competition-seasons/{id}/standing")
     public StandingResponse getByCompetitionSeason(@PathVariable @Positive Long id) {
